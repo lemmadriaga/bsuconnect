@@ -1,0 +1,34 @@
+<div class="flex flex-col h-screen">
+  <div class="bg-gray-800 px-4 py-2 text-white font-bold">
+    BatStateU Connect+ Chat
+  </div>
+
+  <div class="flex-1 overflow-y-auto">
+    <div *ngFor="let message of messages" class="p-4">
+      <div
+        [class.bg-gray-200]="message.sender === currentUser"
+        [class.bg-blue-500]="message.sender !== currentUser"
+        [class.text-white]="message.sender !== currentUser"
+        class="inline-block px-4 py-2 rounded-lg max-w-3/4"
+      >
+        {{ message.content }}
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gray-200 px-4 py-2 flex">
+    <input
+      type="text"
+      class="flex-1 bg-white border-gray-400 border rounded-lg px-4 py-2 mr-2"
+      [(ngModel)]="newMessage"
+      (keyup.enter)="sendMessage()"
+      placeholder="Type your message"
+    />
+    <button
+      class="bg-blue-500 text-white px-4 py-2 rounded-lg"
+      (click)="sendMessage()"
+    >
+      Send
+    </button>
+  </div>
+</div>

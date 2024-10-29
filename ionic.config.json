@@ -1,0 +1,7 @@
+{
+  "name": "BSU Connect+",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

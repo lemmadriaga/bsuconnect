@@ -1,0 +1,95 @@
+<ion-header class="bg-red-700">
+  <ion-toolbar color="danger">
+    <div class="flex items-center justify-between px-4 py-2">
+      <div class="flex items-center space-x-2">
+        <img src="assets/logo-no-text.png" alt="Logo" class="w-10 h-10" />
+        <h1 class="text-white text-xl font-bold">Admin Dashboard</h1>
+      </div>
+      <ion-button fill="clear" (click)="logout()" class="text-white">
+        Logout
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="flex h-full">
+    <!-- Sidebar -->
+    <div class="w-64 bg-gray-100 border-r">
+      <nav class="mt-4">
+        <div
+          *ngFor="let tab of tabs"
+          (click)="selectTab(tab)"
+          class="px-4 py-3 cursor-pointer transition-colors duration-200"
+          [class.bg-red-700]="tab.active"
+          [class.text-white]="tab.active"
+          [class.hover:bg-red-600]="!tab.active"
+        >
+          <div class="flex items-center space-x-3">
+            <ion-icon [name]="tab.icon" class="text-xl"></ion-icon>
+            <span>{{ tab.label }}</span>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6">
+      <!-- Dashboard Overview -->
+      <div *ngIf="currentTab === 'Dashboard'" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Total Users Card -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center space-x-3">
+              <ion-icon name="people" class="text-3xl text-red-700"></ion-icon>
+              <div>
+                <h3 class="text-gray-500">Total Users</h3>
+                <p class="text-2xl font-bold">{{ totalUsers }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Other stat cards can go here -->
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- User Status Chart -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">User Status</h3>
+            <!-- Add your chart component here -->
+          </div>
+
+          <!-- Department Distribution Chart -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Users per Department</h3>
+            <!-- Add your chart component here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Posts Management -->
+      <div *ngIf="currentTab === 'Postings'" class="space-y-6">
+        <app-post-management></app-post-management>
+      </div>
+
+      <!-- Calendar View -->
+      <div *ngIf="currentTab === 'Calendar'" class="space-y-6">
+        <h2 class="text-2xl font-bold mb-4">Calendar</h2>
+        <!-- Add your calendar component here -->
+      </div>
+
+      <!-- Events Management -->
+      <div *ngIf="currentTab === 'Events'" class="space-y-6">
+        <h2 class="text-2xl font-bold mb-4">Events Management</h2>
+        <!-- Add your events management component here -->
+      </div>
+
+      <!-- Reports -->
+      <div *ngIf="currentTab === 'Reports'" class="space-y-6">
+        <h2 class="text-2xl font-bold mb-4">Reports</h2>
+        <!-- Add your reports component here -->
+      </div>
+    </div>
+  </div>
+</ion-content>
