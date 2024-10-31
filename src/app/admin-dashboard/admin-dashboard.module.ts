@@ -6,6 +6,7 @@ import { AdminDashboardPage } from './admin-dashboard.page';
 import { FormsModule } from '@angular/forms';
 import { PostManagementComponent } from '../components/post-management/post-management.component';
 
+
 const routes: Routes = [
   {
     path: '',
@@ -20,6 +21,6 @@ const routes: Routes = [
     IonicModule,
     RouterModule.forChild(routes),
   ],
-  declarations: [AdminDashboardPage, PostManagementComponent],
+  declarations: [AdminDashboardPage, PostManagementComponent,],
 })
 export class AdminDashboardPageModule {}

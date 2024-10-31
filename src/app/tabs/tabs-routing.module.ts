@@ -6,19 +6,31 @@ import { TabsPage } from './tabs.page';
 const routes: Routes = [
   {
     path: '',
-    component: TabsPage
-  },  {
-    path: 'forum',
-    loadChildren: () => import('./forum/forum.module').then( m => m.ForumPageModule)
+    component: TabsPage,
+    children:[
+      {
+        path: 'forum',
+        loadChildren: () => import('./forum/forum.module').then( m => m.ForumPageModule)
+      },
+      {
+        path: 'chat',
+        loadChildren: () => import('./chat/chat.module').then( m => m.ChatPageModule)
+      },
+      {
+        path: 'events',
+        loadChildren: () => import('./events/events.module').then( m => m.EventsPageModule)
+      },
+    ]
   },
   {
-    path: 'chat',
-    loadChildren: () => import('./chat/chat.module').then( m => m.ChatPageModule)
+    path: 'edit-profile',
+    loadChildren: () => import('./edit-profile/edit-profile.module').then( m => m.EditProfilePageModule)
   },
   {
-    path: 'events',
-    loadChildren: () => import('./events/events.module').then( m => m.EventsPageModule)
-  }
+    path: 'report',
+    loadChildren: () => import('./report/report.module').then( m => m.ReportPageModule)
+  } 
+  
 
 ];
 

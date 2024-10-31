@@ -55,6 +55,9 @@ export class ForumPage implements OnInit {
 
     let imageUrl: string | null = null;
 
+    // Ensure authorAvatar is defined before calling savePost
+    const authorAvatar = this.userData?.avatar || null; // Get authorAvatar from userData or set to null
+
     // Upload the image if one is selected
     if (this.selectedImageFile) {
       const filePath = `posts/${Date.now()}_${this.selectedImageFile.name}`;
@@ -67,18 +70,18 @@ export class ForumPage implements OnInit {
         .pipe(
           finalize(async () => {
             imageUrl = await fileRef.getDownloadURL().toPromise();
-            this.savePost(imageUrl);
+            this.savePost(imageUrl, authorAvatar); // Pass authorAvatar to savePost
           })
         )
         .toPromise();
     } else {
       // Save post without an image
-      this.savePost(null);
+      this.savePost(null, authorAvatar);
     }
   }
 
   // Method to save post with or without image URL
-  private async savePost(imageUrl: string | null) {
+  private async savePost(imageUrl: string | null, authorAvatar: string | null) {
     try {
       await this.forumService.createPost(this.newPostContent, this.userData, imageUrl);
       this.newPostContent = '';

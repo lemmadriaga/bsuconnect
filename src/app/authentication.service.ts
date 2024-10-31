@@ -13,6 +13,7 @@ interface UserData {
   contact: string;
   role: string;
   profilePictureUrl?: string;
+  department?: string;
 }
 
 @Injectable({
@@ -30,7 +31,8 @@ export class AuthenticationService {
     email: string,
     password: string,
     fullName: string,
-    contact: string
+    contact: string,
+    department: string
   ): Promise<any> {
     return this.afAuth
       .createUserWithEmailAndPassword(email, password)
@@ -43,6 +45,17 @@ export class AuthenticationService {
             fullName,
             contact,
             role: 'student',
+            department,
+          }).then(() => {
+            // Return user data after successful Firestore write
+            return {
+              uid: user.uid,
+              email,
+              fullName,
+              contact,
+              role: 'student',
+              department,
+            };
           });
         } else {
           throw new Error('User creation failed');
@@ -143,4 +156,21 @@ export class AuthenticationService {
         map((snapshot) => snapshot.size) // `snapshot.size` gives the total number of documents
       );
   }
+
+  updateUserProfile(userId: string, profileData: Partial<UserData>): Promise<void> {
+    return this.firestore.collection('users').doc(userId).update(profileData);
+  }
+  
+  getUserDepartmentCounts(): Observable<{ [department: string]: number }> {
+    return this.firestore.collection('users').valueChanges().pipe(
+      map((users: any[]) => {
+        return users.reduce((acc, user) => {
+          const department = user.department || 'Unknown'; // Handle missing departments
+          acc[department] = (acc[department] || 0) + 1;
+          return acc;
+        }, {} as { [department: string]: number });
+      })
+    );
+  }
+  
 }

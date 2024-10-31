@@ -55,8 +55,8 @@ form {
 }
 
 .image2 {
-  width: 40%;
-  margin-bottom: 40px;
+  width: 20%;
+  margin-bottom: 10px;
 }
 
 .image1 {
@@ -115,8 +115,16 @@ form.sign-in-form {
 }
 
 .input-with-icon {
-  padding-left: 40px;
-  flex: 1;
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  background-color: #fff;
+}
+
+.input-with-icon ion-icon {
+  margin-right: 10px;
 }
 
 .input-field ion-input {

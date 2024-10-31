@@ -44,13 +44,13 @@ export class ForumService {
       timestamp: new Date(),
       authorName: userData.fullName,
       authorRole: userData.role,
-      authorAvatar: userData.profilePictureUrl,
+      authorAvatar: userData.profilePictureUrl || './assets/profile-placeholder.jpg',
       approved: userData.role === 'faculty',
       likes: [],
       dislikes: [],
-      imageUrl: imageUrl || undefined, // Set imageUrl if provided
+      ...(imageUrl && { imageUrl }), 
     };
-
+  
     try {
       await this.firestore.collection('posts').add(post);
       console.log('Post created successfully');
@@ -59,6 +59,7 @@ export class ForumService {
       throw error;
     }
   }
+  
 
   getPosts(): Observable<Post[]> {
     return this.firestore

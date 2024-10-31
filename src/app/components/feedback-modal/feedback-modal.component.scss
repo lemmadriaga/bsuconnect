@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.feedback-modal-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Full viewport height */
+  background: rgba(0, 0, 0, 0.5); /* Adds overlay background */
+  padding: 0; /* Remove any extra padding */
+}
+
+.feedback-modal-container {
+  position: relative; /* Allow absolute positioning of the close button */
+  background-color: white;
+  padding: 20px;
+  border-radius: 15px;
+  max-width: 90%;
+  width: 400px; /* Set fixed width */
+  max-height: 80vh; /* Prevents taking up the full height */
+  margin: auto;
+  margin-top: 50%;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+  overflow-y: auto; /* Enable scrolling if content overflows */
+}
+
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
+  font-size: 1.2rem;
+  color: #990008;
+}
+
+.feedback-item {
+  margin-bottom: 15px;
+}
+
+.rating-container {
+  display: flex;
+  align-items: center;
+}
+
+.star-icon {
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.star-icon:hover,
+.star-icon.active {
+  color: #fbbf24; /* Yellow color */
+}
+
+.submit-button {
+  background-color: #990008;
+  color: white;
+  border-radius: 10px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  width: 100px;
+}
+
+.submit-button:hover {
+  background-color: #cc000a;
+}

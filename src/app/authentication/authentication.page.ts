@@ -39,6 +39,7 @@ export class AuthenticationPage implements AfterViewInit {
         ],
       ],
       password: ['', [Validators.required, Validators.pattern('.{8,}')]],
+      department: ['', [Validators.required]],
     });
 
     this.loginForm = this.formBuilder.group({
@@ -64,17 +65,18 @@ export class AuthenticationPage implements AfterViewInit {
       const password = this.regForm.value.password;
       const fullName = this.regForm.value.fullname;
       const contact = this.regForm.value.contact;
+      const department = this.regForm.value.department;
 
       const user = await this.authService
-        .registerUser(email, password, fullName, contact) // Ensure all required arguments are provided
+        .registerUser(email, password, fullName, contact, department)
         .catch((error) => {
           console.log(error);
           loading.dismiss(); // Dismiss loading on error
         });
 
       if (user) {
-        loading.dismiss(); // Dismiss loading on success
-        this.router.navigate(['tabs/profile']);
+        loading.dismiss(); 
+        this.router.navigate(['student-dashboard/forum']);
       } else {
         console.log('Provide correct values ');
         loading.dismiss(); // Ensure loading is dismissed if user is not returned

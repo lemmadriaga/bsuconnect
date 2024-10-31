@@ -172,6 +172,25 @@
               Password must contain 8 characters
             </ion-text>
           </div>
+          <div class="input-field">
+            <ion-icon name="school" class="icon-left"></ion-icon>
+            <ion-select formControlName="department" placeholder="Select your department">
+              <ion-select-option value="CICS">College of Informatics and Computing Sciences (CICS)</ion-select-option>
+              <ion-select-option value="CET">College of Engineering Technology (CET)</ion-select-option>
+              <ion-select-option value="CTE">College of Teacher Education (CTE)</ion-select-option>
+              <ion-select-option value="CAS">College of Arts and Sciences (CAS)</ion-select-option>
+              <ion-select-option value="CABEIHM">College of Accountancy, Business, Economics and International Hospitality Management (CABEIHM)</ion-select-option>
+            </ion-select>
+          </div>
+          <div
+            *ngIf="regForm.controls?.['department'].touched && regForm.controls?.['department'].invalid"
+          >
+            <ion-text
+              *ngIf="regForm.controls?.['department'].errors?.['required']"
+            >
+              Department selection is required
+            </ion-text>
+          </div>
           <button type="submit" class="btn solid" (click)="signUp()">
             Sign up
           </button>

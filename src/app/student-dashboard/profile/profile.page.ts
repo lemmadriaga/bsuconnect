@@ -3,6 +3,9 @@ import { AuthenticationService } from '../../authentication.service';
 import { Observable } from 'rxjs';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router'; // Import Router
+import { FeedbackService } from 'src/app/feedback.service';
+import { FeedbackModalComponent } from 'src/app/components/feedback-modal/feedback-modal.component';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-profile',
@@ -15,7 +18,9 @@ export class ProfilePage implements OnInit {
   constructor(
     private authService: AuthenticationService,
     private alertController: AlertController,
-    private router: Router 
+    private router: Router,
+    private feedbackService: FeedbackService,
+    private modalController: ModalController
   ) {}
 
   async ngOnInit() {
@@ -64,5 +69,20 @@ export class ProfilePage implements OnInit {
         this.router.navigate(['/forum'], { queryParams: { userId: userData.uid, avatar: userData.profilePictureUrl, role: userData.role } });
       }
     });
+  }
+
+
+
+  async openFeedback() {
+    const modal = await this.modalController.create({
+      component: FeedbackModalComponent,
+    });
+
+    // Present the modal and await its dismissal
+    await modal.present();
+
+    // Handle the modal dismissal if needed
+    const { data } = await modal.onDidDismiss();
+    console.log('Modal dismissed with data:', data);
   }
 }

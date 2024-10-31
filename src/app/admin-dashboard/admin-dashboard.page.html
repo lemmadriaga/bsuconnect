@@ -12,10 +12,10 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="flex h-full">
-    <!-- Sidebar -->
-    <div class="w-64 bg-gray-100 border-r">
+<ion-content class="ion-padding">
+  <div class="dashboard-container flex h-full">
+    <!-- Sidebar (Fixed, non-scrollable) -->
+    <div class="sidebar w-64 bg-gray-100 border-r h-full fixed">
       <nav class="mt-4">
         <div
           *ngFor="let tab of tabs"
@@ -33,8 +33,8 @@
       </nav>
     </div>
 
-    <!-- Main Content -->
-    <div class="flex-1 p-6">
+    <!-- Main Content (Scrollable) -->
+    <div class="main-content flex-1 p-6 ml-64 overflow-y-auto">
       <!-- Dashboard Overview -->
       <div *ngIf="currentTab === 'Dashboard'" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -48,47 +48,106 @@
               </div>
             </div>
           </div>
-
-          <!-- Other stat cards can go here -->
         </div>
 
         <!-- Charts Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- User Status Chart -->
+          <!-- User Ratings Chart -->
           <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold mb-4">User Status</h3>
-            <!-- Add your chart component here -->
+            <h3 class="text-lg font-semibold mb-4">User Ratings</h3>
+            <canvas id="ratingsChart"></canvas>
           </div>
 
           <!-- Department Distribution Chart -->
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow p-6 chart-container">
             <h3 class="text-lg font-semibold mb-4">Users per Department</h3>
-            <!-- Add your chart component here -->
+            <canvas id="departmentChart"></canvas>
           </div>
+          
+          
+          
+        </div>
+
+        <!-- User Feedback Section -->
+        <div class="bg-white rounded-lg shadow p-6 mt-6">
+          <h3 class="text-lg font-semibold mb-4">User Feedback</h3>
+          <div *ngIf="paginatedFeedbackList.length > 0; else noFeedback">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div *ngFor="let feedback of paginatedFeedbackList" class="bg-gray-50 rounded-lg p-4 shadow">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-gray-800 font-bold">{{ feedback.name || 'Anonymous' }}</h4>
+                  <p class="text-gray-500 text-sm">{{ feedback.createdAt | date: 'medium' }}</p>
+                </div>
+                <div class="flex items-center mb-2">
+                  <span class="mr-2 font-bold">Rating:</span>
+                  <ion-icon
+                    *ngFor="let star of [1, 2, 3, 4, 5]"
+                    [name]="star <= feedback.rating ? 'star' : 'star-outline'"
+                    class="star-icon text-yellow-400 text-xl"
+                  ></ion-icon>
+                </div>
+                <p class="text-gray-800">{{ feedback.comment }}</p>
+              </div>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="flex justify-center mt-4 space-x-2">
+              <ion-button *ngFor="let page of totalPages" (click)="goToPage(page)" [fill]="currentPage === page ? 'solid' : 'outline'">
+                {{ page }}
+              </ion-button>
+            </div>
+          </div>
+          <ng-template #noFeedback>
+            <p class="text-gray-500">No feedback available.</p>
+          </ng-template>
         </div>
       </div>
 
-      <!-- Posts Management -->
+      <!-- Other Sections (e.g., Posts Management, Calendar View, Events Management, Reports) -->
       <div *ngIf="currentTab === 'Postings'" class="space-y-6">
         <app-post-management></app-post-management>
       </div>
 
-      <!-- Calendar View -->
       <div *ngIf="currentTab === 'Calendar'" class="space-y-6">
         <h2 class="text-2xl font-bold mb-4">Calendar</h2>
         <!-- Add your calendar component here -->
       </div>
 
-      <!-- Events Management -->
       <div *ngIf="currentTab === 'Events'" class="space-y-6">
         <h2 class="text-2xl font-bold mb-4">Events Management</h2>
         <!-- Add your events management component here -->
       </div>
 
-      <!-- Reports -->
       <div *ngIf="currentTab === 'Reports'" class="space-y-6">
-        <h2 class="text-2xl font-bold mb-4">Reports</h2>
-        <!-- Add your reports component here -->
+        <h3 class="text-2xl font-semibold mb-4">User Reports</h3>
+        <div *ngIf="paginatedReportList.length > 0; else noReports">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div *ngFor="let report of paginatedReportList" class="bg-gray-50 rounded-lg p-4 shadow">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-gray-800 font-bold">{{ report.title }}</h4>
+                <p class="text-gray-500 text-sm">{{ report.createdAt | date: 'medium' }}</p>
+              </div>
+              <p class="text-gray-600 mb-2"><strong>From:</strong> {{ report.userName || 'Anonymous' }}</p>
+              <p class="text-gray-600 mb-2"><strong>Description: <br></strong>{{ report.description }}</p>
+              <img *ngIf="report.imageUrl" [src]="report.imageUrl" alt="Report Image" class="w-full h-32 object-cover rounded-lg mb-2" />
+              <div class="flex justify-end">
+                <ion-button *ngIf="!report.solved" color="success" (click)="markAsSolved(report.id)">Mark as Solved</ion-button>
+                <ion-badge color="danger" *ngIf="report.solved">Solved</ion-badge>
+              </div>
+            </div>
+          </div>
+        
+          <!-- Pagination Controls -->
+          <div class="flex justify-center mt-4 space-x-2">
+            <ion-button *ngFor="let page of totalPages" (click)="goToPage(page)" [fill]="currentPage === page ? 'solid' : 'outline'">
+              {{ page }}
+            </ion-button>
+          </div>
+        </div>
+        <ng-template #noReports>
+          <p class="text-gray-500">No reports available.</p>
+        </ng-template>
+        
       </div>
     </div>
   </div>

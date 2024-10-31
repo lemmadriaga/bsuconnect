@@ -4,3 +4,34 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow: hidden; /* Prevents scrolling in the sidebar */
+  z-index: 1000;
+  width: 16rem; /* Fixed width to keep it in place */
+  margin-top: 4%;
+}
+
+.main-content {
+  margin-left: 16rem; /* Matches the width of the sidebar */
+  overflow-y: auto; /* Enables scrolling only in the main content */
+  padding-bottom: 1rem;
+}
+.chart-container {
+  width: 100%;
+  max-width: 400px; /* Maximum width for the container */
+  height: 400px; /* Set a fixed height */
+  overflow: hidden;
+  margin: 0 auto;
+}
+
