@@ -19,19 +19,26 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "src/assets",
-                "output": "assets"
-              },
-              {
-                "glob": "**/*.svg",
-                "input": "node_modules/ionicons/dist/ionicons/svg",
-                "output": "./svg"
-              }
-            ],
-            "styles": ["src/global.scss", "src/theme/variables.scss", "node_modules/leaflet/dist/leaflet.css"],
+              "assets": [
+                {
+                  "glob": "**/*",
+                  "input": "src/assets",
+                  "output": "assets"
+                },
+                {
+                  "glob": "**/*.svg",
+                  "input": "node_modules/ionicons/dist/ionicons/svg",
+                  "output": "./svg"
+                },
+                {
+                  "glob": "**/*",
+                  "input": "node_modules/leaflet/dist/images/",
+                  "output": "./assets/"
+                }
+              ],
+            "styles": ["src/global.scss", "src/theme/variables.scss", "node_modules/leaflet/dist/leaflet.css",
+            "node_modules/mapbox-gl/dist/mapbox-gl.css",
+            "node_modules/@mapbox/mapbox-gl-geocoder/lib/mapbox-gl-geocoder.css"],
             "scripts": []
           },
           "configurations": {
@@ -111,7 +118,9 @@
                 "output": "./svg"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss", "node_modules/leaflet/dist/leaflet.css"],
+            "styles": ["src/global.scss", "src/theme/variables.scss", "node_modules/leaflet/dist/leaflet.css", 
+            "node_modules/mapbox-gl/dist/mapbox-gl.css",
+            "node_modules/@mapbox/mapbox-gl-geocoder/lib/mapbox-gl-geocoder.css"],
             "scripts": []
           },
           "configurations": {

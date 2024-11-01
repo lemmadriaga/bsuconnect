@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { ForumService, Post } from '../forum.service';
 import { AuthenticationService } from '../authentication.service';
 import { Observable } from 'rxjs';
@@ -8,6 +8,8 @@ import { Chart } from 'chart.js/auto';
 import { ReportService } from '../report.service';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
+import * as L from 'leaflet';
+import 'leaflet-control-geocoder';
 
 
 interface TabItem {
@@ -21,7 +23,10 @@ interface TabItem {
   templateUrl: './admin-dashboard.page.html',
   styleUrls: ['./admin-dashboard.page.scss'],
 })
-export class AdminDashboardPage implements OnInit {
+export class AdminDashboardPage implements OnInit, AfterViewInit {
+  map: L.Map | null = null;
+  marker: L.Marker | null = null;
+  mapReady: boolean = false;
   feedbackList: any[] = []; // Full feedback list
   paginatedFeedbackList: any[] = []; // Feedback for current page
   ratingsChart: any;
@@ -39,7 +44,10 @@ export class AdminDashboardPage implements OnInit {
     location: '',
     invited: [],
     description: '',
-    thumbnailUrl: ''
+    thumbnailUrl: '',
+    latitude: 14.073856, // Default latitude
+    longitude: 121.2612608,
+  
   };
   events: any[] = []; // List of events
   showEventDetailsModal = false;
@@ -70,14 +78,29 @@ export class AdminDashboardPage implements OnInit {
     private storage: AngularFireStorage
   ) {
     this.pendingPosts$ = this.forumService.getPostsForApproval();
+    const iconRetinaUrl = 'assets/marker-icon-2x.png';
+    const iconUrl = 'assets/marker-icon.png';
+    const shadowUrl = 'assets/marker-shadow.png';
+    const iconDefault = L.icon({
+      iconRetinaUrl,
+      iconUrl,
+      shadowUrl,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      tooltipAnchor: [16, -28],
+      shadowSize: [41, 41]
+    });
+    L.Marker.prototype.options.icon = iconDefault;
+  
   }
 
-  openEventForm() {
-    this.showEventForm = true;
-  }
-  closeEventForm() {
-    this.showEventForm = false;
-  }
+  // openEventForm() {
+  //   this.showEventForm = true;
+  // }
+  // closeEventForm() {
+  //   this.showEventForm = false;
+  // }
   eventDetails(eventId: string) {
     if (eventId) {
         this.selectedEventId = eventId;
@@ -137,9 +160,17 @@ export class AdminDashboardPage implements OnInit {
           };
       });
   });
-  
+
     
   }
+
+  ngAfterViewInit() {
+    if (this.showEventForm) {
+      this.initializeMapWithDelay();
+    }
+  }
+
+  
 
   calculateTotalPages() {
     const pageCount = Math.ceil(this.feedbackList.length / this.itemsPerPage);
@@ -281,20 +312,20 @@ export class AdminDashboardPage implements OnInit {
       },
     });
   }
-  submitEventForm() {
-    // Convert roles to lowercase before adding them to Firestore
-    if (this.eventForm.title && this.eventForm.date && this.eventForm.time && this.eventForm.thumbnailUrl) {
-      // Ensure all roles in `invited` are lowercase
-      this.eventForm.invited = this.eventForm.invited.map((role: string) => role.toLowerCase());
+  // submitEventForm() {
+  //   // Convert roles to lowercase before adding them to Firestore
+  //   if (this.eventForm.title && this.eventForm.date && this.eventForm.time && this.eventForm.thumbnailUrl) {
+  //     // Ensure all roles in `invited` are lowercase
+  //     this.eventForm.invited = this.eventForm.invited.map((role: string) => role.toLowerCase());
       
-      this.firestore.collection('events').add(this.eventForm).then(() => {
-        this.showEventForm = false;
-        this.eventForm = { title: '', date: '', time: '', location: '', invited: [], description: '', thumbnailUrl: '' };
-      });
-    } else {
-      alert("Please wait for the thumbnail to finish uploading or fill all required fields.");
-    }
-  }
+  //     this.firestore.collection('events').add(this.eventForm).then(() => {
+  //       this.showEventForm = false;
+  //       this.eventForm = { title: '', date: '', time: '', location: '', invited: [], description: '', thumbnailUrl: '' };
+  //     });
+  //   } else {
+  //     alert("Please wait for the thumbnail to finish uploading or fill all required fields.");
+  //   }
+  // }
   
 
   uploadThumbnail(event: any) {
@@ -384,6 +415,106 @@ private countAttendeesByDepartment(attendees: any[]) {
 
   return departmentCounts;
 }
+openEventForm() {
+  this.showEventForm = true;
+  // Initialize map after modal is shown
+  setTimeout(() => {
+    this.initializeMapWithDelay();
+  }, 500);
+}
+
+closeEventForm() {
+  if (this.map) {
+    this.map.remove();
+    this.map = null;
+  }
+  if (this.marker) {
+    this.marker = null;
+  }
+  this.showEventForm = false;
+}
+
+submitEventForm() {
+  if (this.eventForm.title && this.eventForm.date && this.eventForm.time && this.eventForm.thumbnailUrl) {
+    this.eventForm.invited = this.eventForm.invited.map((role: string) => role.toLowerCase());
+
+    this.firestore.collection('events').add(this.eventForm).then(() => {
+      this.showEventForm = false;
+      this.eventForm = {
+        title: '',
+        date: '',
+        time: '',
+        location: '',
+        invited: [],
+        description: '',
+        thumbnailUrl: '',
+        latitude: null,
+        longitude: null,
+      };
+    });
+  } else {
+    alert("Please wait for the thumbnail to finish uploading or fill all required fields.");
+  }
+}
+initializeMapWithDelay() {
+  if (this.map) {
+    this.map.remove();
+  }
+
+  setTimeout(() => {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) {
+      console.error('Map container not found');
+      return;
+    }
+
+    try {
+      this.map = L.map('map', {
+        center: [this.eventForm.latitude, this.eventForm.longitude],
+        zoom: 13,
+        layers: [
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+          })
+        ]
+      });
+
+      this.marker = L.marker([this.eventForm.latitude, this.eventForm.longitude], {
+        draggable: true
+      }).addTo(this.map);
+
+      this.marker.on('dragend', (event) => {
+        const marker = event.target;
+        const position = marker.getLatLng();
+        this.eventForm.latitude = position.lat;
+        this.eventForm.longitude = position.lng;
+      });
+
+      setTimeout(() => {
+        this.map?.invalidateSize();
+      }, 250);
+
+    } catch (error) {
+      console.error('Error initializing map:', error);
+    }
+  }, 500);
+}
+
+
+updateMarkerPosition() {
+  if (this.map && this.marker && this.eventForm.latitude && this.eventForm.longitude) {
+    const newLatLng = L.latLng(this.eventForm.latitude, this.eventForm.longitude);
+    this.marker.setLatLng(newLatLng);
+    this.map.setView(newLatLng, this.map.getZoom());
+  }
+}
+
+
+
+
+
+
 
 
 }

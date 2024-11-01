@@ -42,9 +42,16 @@
         <ion-button *ngIf="!isRegistered" (click)="registerToEvent()" expand="block" color="danger" class="text-lg font-semibold">
           Register to this Event
         </ion-button>
-        <ion-button *ngIf="isRegistered && !isAttended && isEventToday()" (click)="markAttendance()" expand="block" color="success" class="text-lg font-semibold">
-          I'm Here
-        </ion-button>
+        <ion-button
+        *ngIf="isRegistered && !isAttended && isEventToday()"
+        (click)="checkLocationAndMarkAttendance()"
+        expand="block"
+        color="success"
+        class="text-lg font-semibold"
+      >
+        I'm Here
+      </ion-button>
+      
         <ion-button *ngIf="isAttended" expand="block" color="medium" disabled class="text-lg font-semibold">
           Attended
         </ion-button>
