@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AdminGuard } from './guards/admin.guard';
+import { EventsPage } from './tabs/events/events.page';
+import { EventDetailsPage } from './tabs/event-details/event-details.page';
 
 const routes: Routes = [
   {
@@ -54,6 +56,8 @@ const routes: Routes = [
     loadChildren: () =>
       import('./tabs/forum/forum.module').then((m) => m.ForumPageModule),
   },
+  { path: 'events', component: EventsPage },
+  { path: 'event-details/:id', component: EventDetailsPage },
 ];
 
 @NgModule({

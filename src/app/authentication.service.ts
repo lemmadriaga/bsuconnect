@@ -3,7 +3,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import firebase from 'firebase/compat/app';
-import { from, Observable } from 'rxjs';
+import { from, Observable, of} from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 
 interface UserData {
@@ -172,5 +172,44 @@ export class AuthenticationService {
       })
     );
   }
-  
+   // Method to get the user ID from Firebase Authentication
+   getUserId(): Observable<string | null> {
+    return this.afAuth.authState.pipe(
+      switchMap(user => (user ? of(user.uid) : of(null)))
+    );
+  }
+
+  // Method to get the user’s full name from Firestore
+getUserName(): Observable<string | null> {
+  return this.getUserId().pipe(
+      switchMap(userId => {
+          if (userId) {
+              return this.firestore.collection('users').doc(userId).valueChanges().pipe(
+                  map((userData: any) => userData?.fullName ?? null) // Change to `fullName`
+              );
+          }
+          return of(null);
+      })
+  );
+}
+
+// Method to get the user's department from Firestore
+getUserDepartment(): Observable<string | null> {
+  return this.getUserId().pipe(
+      switchMap(userId => {
+          if (userId) {
+              console.log("User ID in getUserDepartment:", userId);
+              return this.firestore.collection('users').doc(userId).valueChanges().pipe(
+                  map((userData: any) => {
+                      console.log("User data from Firestore:", userData); // Log entire document
+                      return userData?.department ?? null;
+                  })
+              );
+          }
+          return of(null);
+      })
+  );
+}
+
+
 }

@@ -6,6 +6,9 @@ import { Router } from '@angular/router';
 import { FeedbackService } from '../feedback.service';
 import { Chart } from 'chart.js/auto';
 import { ReportService } from '../report.service';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { AngularFireStorage } from '@angular/fire/compat/storage';
+
 
 interface TabItem {
   label: string;
@@ -28,6 +31,22 @@ export class AdminDashboardPage implements OnInit {
   reports: any[] = [];
   paginatedReportList: any[] = [];
   departmentChart: any;
+  showEventForm = false;
+  eventForm = {
+    title: '',
+    date: '',
+    time: '',
+    location: '',
+    invited: [],
+    description: '',
+    thumbnailUrl: ''
+  };
+  events: any[] = []; // List of events
+  showEventDetailsModal = false;
+  selectedEventId: string | null = null;
+  attendeeList: any[] = [];
+  attendeesDepartmentChart: any;
+
 
   tabs: TabItem[] = [
     { label: 'Dashboard', icon: 'grid', active: true },
@@ -47,8 +66,38 @@ export class AdminDashboardPage implements OnInit {
     private router: Router,
     private feedbackService: FeedbackService,
     private reportService: ReportService,
+    private firestore: AngularFirestore, 
+    private storage: AngularFireStorage
   ) {
     this.pendingPosts$ = this.forumService.getPostsForApproval();
+  }
+
+  openEventForm() {
+    this.showEventForm = true;
+  }
+  closeEventForm() {
+    this.showEventForm = false;
+  }
+  eventDetails(eventId: string) {
+    if (eventId) {
+        this.selectedEventId = eventId;
+        this.showEventDetailsModal = true;
+        this.loadAttendeeDetails();
+    } else {
+        console.error("Invalid eventId passed to eventDetails:", eventId);
+    }
+}
+
+
+
+  
+
+  // Close the event details modal
+  closeEventDetailsModal() {
+    this.showEventDetailsModal = false;
+    if (this.attendeesDepartmentChart) {
+      this.attendeesDepartmentChart.destroy(); // Destroy the chart instance
+    }
   }
 
   ngOnInit() {
@@ -79,6 +128,17 @@ export class AdminDashboardPage implements OnInit {
     });
 
     this.fetchReports();
+
+    this.firestore.collection('events').snapshotChanges().subscribe((events: any[]) => {
+      this.events = events.map(e => {
+          return {
+              id: e.payload.doc.id,  // Include the document ID here
+              ...e.payload.doc.data()
+          };
+      });
+  });
+  
+    
   }
 
   calculateTotalPages() {
@@ -220,13 +280,110 @@ export class AdminDashboardPage implements OnInit {
         },
       },
     });
-    
-    
-    
-    
+  }
+  submitEventForm() {
+    // Convert roles to lowercase before adding them to Firestore
+    if (this.eventForm.title && this.eventForm.date && this.eventForm.time && this.eventForm.thumbnailUrl) {
+      // Ensure all roles in `invited` are lowercase
+      this.eventForm.invited = this.eventForm.invited.map((role: string) => role.toLowerCase());
+      
+      this.firestore.collection('events').add(this.eventForm).then(() => {
+        this.showEventForm = false;
+        this.eventForm = { title: '', date: '', time: '', location: '', invited: [], description: '', thumbnailUrl: '' };
+      });
+    } else {
+      alert("Please wait for the thumbnail to finish uploading or fill all required fields.");
+    }
   }
   
+
+  uploadThumbnail(event: any) {
+    const file = event.target.files[0];
+    const filePath = `thumbnails/${new Date().getTime()}_${file.name}`;
+    const fileRef = this.storage.ref(filePath);
   
+    fileRef.put(file).then(() => {
+      fileRef.getDownloadURL().subscribe((url) => {
+        this.eventForm.thumbnailUrl = url; // Set the thumbnail URL after upload completes
+      });
+    });
+  }
+  
+  loadAttendeeDetails() {
+    if (typeof this.selectedEventId === 'string' && this.selectedEventId) {
+        console.log("Loading attendees for event ID:", this.selectedEventId);
+
+        // Fetching attendees from the subcollection 'attendees'
+        this.firestore
+            .collection('events')
+            .doc(this.selectedEventId)
+            .collection('attendees')
+            .valueChanges()
+            .subscribe((attendees: any[]) => {
+                console.log("Fetched Attendees:", attendees); // Log fetched attendees
+                this.attendeeList = attendees;
+                this.updateDepartmentChart(attendees); // Update chart after loading attendees
+            });
+    } else {
+        console.error("Invalid selectedEventId:", this.selectedEventId);
+    }
+}
+
+
+
+
+
+  
+  
+  
+
+updateDepartmentChart(attendees: any[]) {
+  // Filter attendees with 'present' status only
+  const presentAttendees = attendees.filter(attendee => attendee.status === 'present');
+  
+  // Count attendees by department from the filtered list
+  const departmentCounts = this.countAttendeesByDepartment(presentAttendees);
+  const departments = Object.keys(departmentCounts);
+  const counts = Object.values(departmentCounts);
+
+  const ctx = document.getElementById('attendeesDepartmentChart') as HTMLCanvasElement;
+
+  // Destroy the previous chart if it exists to prevent overlap
+  if (this.attendeesDepartmentChart) {
+      this.attendeesDepartmentChart.destroy();
+  }
+
+  this.attendeesDepartmentChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+          labels: departments,
+          datasets: [{
+              data: counts,
+              backgroundColor: ['#3498db', '#e74c3c', '#f39c12', '#2ecc71', '#9b59b6'],
+          }]
+      },
+      options: {
+          responsive: true,
+          plugins: {
+              legend: {
+                  position: 'top'
+              }
+          }
+      }
+  });
+}
+
+
+private countAttendeesByDepartment(attendees: any[]) {
+  const departmentCounts: { [key: string]: number } = {};
+
+  attendees.forEach(attendee => {
+      const department = attendee.department;
+      departmentCounts[department] = (departmentCounts[department] || 0) + 1;
+  });
+
+  return departmentCounts;
+}
 
 
 }

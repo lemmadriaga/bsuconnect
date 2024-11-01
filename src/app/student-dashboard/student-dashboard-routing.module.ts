@@ -24,6 +24,11 @@ const routes: Routes = [
         path: 'events',
         loadChildren: () => import('../tabs/events/events.module').then( m => m.EventsPageModule)
       },
+      {
+        path: 'event-details',
+        loadChildren: () => import('../tabs/event-details/event-details.module').then( m => m.EventDetailsPageModule)
+      },
+      
     ]
   },
   {

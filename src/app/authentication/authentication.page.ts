@@ -115,7 +115,7 @@ export class AuthenticationPage implements AfterViewInit {
                 await this.router.navigate(['/admin-dashboard']);
                 break;
               case 'student':
-                await this.router.navigate(['/student-dashboard']);
+                await this.router.navigate(['/student-dashboard/forum']);
                 break;
               case 'alumni':
                 await this.router.navigate(['/alumni-dashboard']);

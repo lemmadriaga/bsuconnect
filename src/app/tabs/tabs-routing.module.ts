@@ -29,7 +29,11 @@ const routes: Routes = [
   {
     path: 'report',
     loadChildren: () => import('./report/report.module').then( m => m.ReportPageModule)
-  } 
+  },   {
+    path: 'event-details',
+    loadChildren: () => import('./event-details/event-details.module').then( m => m.EventDetailsPageModule)
+  }
+
   
 
 ];
