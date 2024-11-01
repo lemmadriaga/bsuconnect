@@ -162,10 +162,18 @@
             </div>
             
             <!-- Location -->
+            <!-- Location Input Field -->
             <div>
               <label class="block text-gray-600 mb-2 font-medium">Location</label>
-              <ion-input [(ngModel)]="eventForm.location" name="location" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"></ion-input>
+              <ion-input 
+                [(ngModel)]="eventForm.location" 
+                name="location" 
+                required 
+                (ionBlur)="setLocationFromAddress()"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500">
+              </ion-input>
             </div>
+
       
             <!-- Map Container -->
             <div class="mt-4">

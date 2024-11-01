@@ -511,6 +511,26 @@ updateMarkerPosition() {
 }
 
 
+setLocationFromAddress() {
+  if (!this.eventForm.location || !this.map || !this.marker) return;
+
+  // Initialize the geocoder
+  const geocoder = L.Control.Geocoder.nominatim();
+
+  geocoder.geocode(this.eventForm.location, (results) => {
+    if (results && results.length > 0) {
+      const latlng = results[0].center;
+      this.eventForm.latitude = latlng.lat;
+      this.eventForm.longitude = latlng.lng;
+
+      // Update the marker position and map view
+      this.marker.setLatLng(latlng);
+      this.map.setView(latlng, this.map.getZoom());
+    } else {
+      alert("Address not found. Please enter a valid location.");
+    }
+  });
+}
 
 
 
