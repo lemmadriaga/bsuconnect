@@ -8,6 +8,7 @@ import { ProfilePageRoutingModule } from './profile-routing.module';
 import { FeedbackModalComponent } from 'src/app/components/feedback-modal/feedback-modal.component';
 import { ProfilePage } from './profile.page';
 
+
 @NgModule({
   imports: [
     CommonModule,

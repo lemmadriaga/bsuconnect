@@ -8,6 +8,8 @@ import { ChatPageRoutingModule } from './chat-routing.module';
 
 import { ChatPage } from './chat.page';
 
+
+
 @NgModule({
   imports: [
     CommonModule,
@@ -15,6 +17,6 @@ import { ChatPage } from './chat.page';
     IonicModule,
     ChatPageRoutingModule
   ],
-  declarations: [ChatPage]
+  declarations: [ChatPage,]
 })
 export class ChatPageModule {}

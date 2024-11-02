@@ -1,34 +1,46 @@
-<div class="flex flex-col h-screen">
-  <div class="bg-gray-800 px-4 py-2 text-white font-bold">
-    BatStateU Connect+ Chat
+<ion-content>
+  <!-- Top image -->
+  <div class="top-image">
+    <img src="assets/top-chat.png" alt="SafeTalks Header" />
   </div>
 
-  <div class="flex-1 overflow-y-auto">
-    <div *ngFor="let message of messages" class="p-4">
-      <div
-        [class.bg-gray-200]="message.sender === currentUser"
-        [class.bg-blue-500]="message.sender !== currentUser"
-        [class.text-white]="message.sender !== currentUser"
-        class="inline-block px-4 py-2 rounded-lg max-w-3/4"
-      >
-        {{ message.content }}
-      </div>
-    </div>
-  </div>
+   <!-- Segment for switching between Chats and Active -->
+   <ion-segment [(ngModel)]="segmentValue" (ionChange)="onSegmentChange($event)" class="custom-segment">
+    <ion-segment-button value="chats" class="custom-segment-button">
+      <ion-label>Chats</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="active" class="custom-segment-button">
+      <ion-label>Active</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
-  <div class="bg-gray-200 px-4 py-2 flex">
-    <input
-      type="text"
-      class="flex-1 bg-white border-gray-400 border rounded-lg px-4 py-2 mr-2"
-      [(ngModel)]="newMessage"
-      (keyup.enter)="sendMessage()"
-      placeholder="Type your message"
-    />
-    <button
-      class="bg-blue-500 text-white px-4 py-2 rounded-lg"
-      (click)="sendMessage()"
-    >
-      Send
-    </button>
-  </div>
-</div>
+  <!-- Chats Section -->
+  <ion-list *ngIf="segmentValue === 'chats'" class="user-list">
+    <ion-item *ngFor="let chat of recentChats" lines="none" class="user-item" (click)="startChat(chat.otherParticipant.uid)">
+      <ion-avatar slot="start">
+        <img [src]="chat.otherParticipant?.profilePictureUrl || './assets/profile-placeholder.jpg'" />
+      </ion-avatar>
+      
+      <ion-label>
+        <h2>{{ chat.otherParticipant?.fullName || 'Unknown User' }}</h2>
+        <p>{{ chat.lastMessage?.content || 'No messages yet' }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  
+  
+
+  <!-- Active Section -->
+  <ion-list *ngIf="segmentValue === 'active'" class="user-list">
+    <ion-item *ngFor="let user of activeUsers" (click)="startChat(user.id)">
+      <ion-avatar slot="start">
+        <img [src]="user.avatar" />
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ user.fullName || 'Unknown User' }}</h2>
+        <p>{{ user.status || 'Active now' }}</p>
+      </ion-label>
+      <ion-icon name="ellipse" color="success" slot="end" class="status-icon"></ion-icon>
+    </ion-item>
+  </ion-list>
+</ion-content>

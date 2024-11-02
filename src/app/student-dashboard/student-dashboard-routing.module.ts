@@ -14,7 +14,7 @@ const routes: Routes = [
       },
       {
         path: 'chat',
-        loadChildren: () => import('../tabs/chat/chat.module').then( m => m.ChatPageModule)
+        loadChildren:() => import('../tabs/chat/chat.module').then( m => m.ChatPageModule)
       },
       {
         path: 'forum',

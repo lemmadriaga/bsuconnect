@@ -1,0 +1,82 @@
+.message-list {
+  padding: 16px;
+}
+
+.message-item {
+  margin-bottom: 16px;
+  display: flex;
+}
+
+.message-content {
+  max-width: 70%;
+  padding: 8px 12px;
+  border-radius: 18px;
+  background-color: #f1f0f0;
+}
+
+.own-message {
+  justify-content: flex-end;
+}
+
+.own-message .message-content {
+  background-color: #0084ff;
+  color: white;
+}
+
+.timestamp {
+  font-size: 0.8em;
+  color: #888;
+  margin-top: 4px;
+}
+
+ion-footer ion-toolbar {
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+ion-input {
+  --padding-start: 8px;
+}
+// ... existing styles ...
+
+ion-header {
+  ion-toolbar {
+    --background: #ffffff;
+    --color: #333333;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+  }
+
+  ion-avatar {
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+  }
+
+  .user-details {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .user-name {
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .user-status {
+    font-size: 12px;
+    color: #888888;
+
+    &.online {
+      color: #4caf50;
+    }
+  }
+}
+
+ion-buttons {
+  margin-right: 8px;
+}

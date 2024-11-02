@@ -3,6 +3,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AdminGuard } from './guards/admin.guard';
 import { EventsPage } from './tabs/events/events.page';
 import { EventDetailsPage } from './tabs/event-details/event-details.page';
+import { ChatRoomComponent } from './components/chat-room/chat-room.component';
 
 const routes: Routes = [
   {
@@ -58,6 +59,13 @@ const routes: Routes = [
   },
   { path: 'events', component: EventsPage },
   { path: 'event-details/:id', component: EventDetailsPage },
+
+  
+    {
+      path: 'chat-room/:id',
+      loadChildren: () => import('./components/chat-room/chat-room.module').then(m => m.ChatRoomModule)
+    },
+  
 ];
 
 @NgModule({

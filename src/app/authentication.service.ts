@@ -26,7 +26,6 @@ export class AuthenticationService {
     private storage: AngularFireStorage
   ) {}
 
-  // Register a new user
   registerUser(
     email: string,
     password: string,
@@ -39,24 +38,24 @@ export class AuthenticationService {
       .then((userCredential) => {
         const user = userCredential.user;
         if (user) {
-          return this.firestore.collection('users').doc(user.uid).set({
+          const userData = {
             uid: user.uid,
             email,
             fullName,
             contact,
             role: 'student',
             department,
-          }).then(() => {
-            // Return user data after successful Firestore write
-            return {
-              uid: user.uid,
-              email,
-              fullName,
-              contact,
-              role: 'student',
-              department,
-            };
-          });
+          };
+          
+          return this.firestore.collection('users').doc(user.uid).set(userData)
+            .then(() => {
+              // Create an entry in `userStatus` collection for tracking online status
+              return this.firestore.collection('userStatus').doc(user.uid).set({
+                uid: user.uid,
+                online: false,
+                lastActive: new Date()
+              }).then(() => userData); // Return userData after both writes
+            });
         } else {
           throw new Error('User creation failed');
         }
@@ -66,14 +65,27 @@ export class AuthenticationService {
         throw error;
       });
   }
+  
 
   // Sign in existing user
-  loginUser(
-    email: string,
-    password: string
-  ): Promise<firebase.auth.UserCredential> {
-    return this.afAuth.signInWithEmailAndPassword(email, password);
+  loginUser(email: string, password: string): Promise<firebase.auth.UserCredential> {
+    return this.afAuth.signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        if (user) {
+          this.updateUserStatus(user.uid, true); // Set online status on login
+        }
+        return userCredential;
+      });
   }
+  updateUserStatus(userId: string, online: boolean): Promise<void> {
+    return this.firestore.collection('userStatus').doc(userId).set({
+      uid: userId,
+      online: online,
+      lastActive: new Date()
+    }, { merge: true }); // `merge: true` ensures existing fields aren’t overwritten
+  }
+    
 
   // Google sign-in
   googleSignIn(): Promise<firebase.auth.UserCredential> {
@@ -110,24 +122,35 @@ export class AuthenticationService {
 
   // Sign out
   logoutUser(): Promise<void> {
-    return this.afAuth.signOut();
+    return this.afAuth.currentUser.then(user => {
+      if (user) {
+        this.updateUserStatus(user.uid, false); // Set user offline on logout
+      }
+      return this.afAuth.signOut();
+    });
   }
+  
 
-  getUserData$(): Observable<UserData | null> {
+  getUserData$(): Observable<any> {
     return this.afAuth.authState.pipe(
-      switchMap((user) => {
+      switchMap(user => {
+        console.log('Auth state user:', user); // Log the auth state
+  
         if (user) {
-          return this.firestore
-            .collection('users')
-            .doc(user.uid)
-            .valueChanges()
-            .pipe(map((data) => data as UserData));
+          return this.firestore.doc(`users/${user.uid}`).valueChanges().pipe(
+            map(userData => {
+              console.log('User data from Firestore:', userData); // Log retrieved user data
+              return userData;
+            })
+          );
         } else {
-          return from([null]);
+          console.warn('No authenticated user'); // Log if no user is authenticated
+          return of(null);
         }
       })
     );
   }
+  
 
   uploadProfilePicture(userId: string, file: File): Observable<string> {
     const filePath = `profile_pictures/${userId}`;
@@ -144,9 +167,12 @@ export class AuthenticationService {
     );
   }
 
-  getCurrentUserId(): Promise<string | null> {
-    return this.afAuth.currentUser.then((user) => (user ? user.uid : null));
+  async getCurrentUserId(): Promise<string | null> {
+    const user = await this.afAuth.currentUser;
+    return user ? user.uid : null;
   }
+  
+
   
   getTotalUserCount(): Observable<number> {
     return this.firestore

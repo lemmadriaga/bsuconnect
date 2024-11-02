@@ -10,6 +10,9 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import * as L from 'leaflet';
 import 'leaflet-control-geocoder';
+import { FullCalendarComponent } from '@fullcalendar/angular';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
 
 
 interface TabItem {
@@ -24,6 +27,7 @@ interface TabItem {
   styleUrls: ['./admin-dashboard.page.scss'],
 })
 export class AdminDashboardPage implements OnInit, AfterViewInit {
+  showEventDetailsModal = false;
   map: L.Map | null = null;
   marker: L.Marker | null = null;
   mapReady: boolean = false;
@@ -50,10 +54,12 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   
   };
   events: any[] = []; // List of events
-  showEventDetailsModal = false;
   selectedEventId: string | null = null;
   attendeeList: any[] = [];
   attendeesDepartmentChart: any;
+  calendarOptions: any;
+  selectedEvent: any;
+ 
 
 
   tabs: TabItem[] = [
@@ -124,6 +130,8 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+      this.loadEvents();
+      this.initializeCalendar();
     // Check if user is admin
     this.authService.getUserRole$().subscribe((role) => {
       if (role !== 'admin') {
@@ -169,8 +177,59 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       this.initializeMapWithDelay();
     }
   }
+  initializeCalendar() {
+    this.calendarOptions = {
+      plugins: [dayGridPlugin, interactionPlugin],
+      initialView: 'dayGridMonth',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,dayGridWeek',
+      },
+      events: [],
+      eventClick: this.handleEventClick.bind(this),
+    };
+  }
+  loadEvents() {
+    // Fetch events from Firestore
+    this.firestore.collection('events').snapshotChanges().subscribe(events => {
+      const calendarEvents = events.map(e => {
+        const data: any = e.payload.doc.data();
+        return {
+          id: e.payload.doc.id,
+          title: data.title,
+          start: data.date,
+          extendedProps: {
+            time: data.time,
+            location: data.location,
+            description: data.description,
+          }
+        };
+      });
 
-  
+      // Add Philippine holidays
+      const philippineHolidays = [
+        { title: 'New Year\'s Day', date: '2024-01-01' },
+        { title: 'Independence Day', date: '2024-06-12' },
+        { title: 'Bonifacio Day', date: '2024-11-30' },
+        // Add more holidays as needed
+      ];
+
+      this.calendarOptions.events = [...calendarEvents, ...philippineHolidays];
+    });
+  }
+
+  // Handle event click to show event details
+  handleEventClick(eventClickInfo) {
+    this.selectedEvent = {
+      title: eventClickInfo.event.title,
+      date: eventClickInfo.event.start,
+      ...eventClickInfo.event.extendedProps,
+    };
+    this.showEventDetailsModal = true;
+  }
+
+
 
   calculateTotalPages() {
     const pageCount = Math.ceil(this.feedbackList.length / this.itemsPerPage);

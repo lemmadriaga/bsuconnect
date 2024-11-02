@@ -1,43 +1,108 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChatService } from '../../chat.service';
 import { AuthenticationService } from '../../authentication.service';
-
-interface Message {
-  sender: string;
-  content: string;
-}
+import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.page.html',
-  styleUrls: ['./chat.page.scss']
+  styleUrls: ['./chat.page.scss'],
 })
-export class ChatPage implements OnInit {
-  messages: Message[] = [];
-  newMessage: string = '';
-  currentUser: string = '';
+export class ChatPage implements OnInit, OnDestroy {
+  segmentValue: string = 'chats';
+  recentChats: any[] = [];
+  activeUsers: any[] = [];
+  private chatSubscription: Subscription;
+  private activeUsersSubscription: Subscription;
+  private currentUserId: string | null = null;
 
-  constructor(private authService: AuthenticationService) {}
+  constructor(
+    private chatService: ChatService,
+    private authService: AuthenticationService,
+    private router: Router
+  ) {}
 
-  async ngOnInit() {
-    this.currentUser = await this.authService.getCurrentUserId();
-    // Load existing messages from Firestore or initialize an empty array
-    this.messages = [
-      { sender: 'John Doe', content: 'Hello!' },
-      { sender: 'Lorna Tolentino', content: 'Hi there!' },
-    ];
+  ngOnInit() {
+    this.authService.getCurrentUserId().then(userId => {
+      this.currentUserId = userId;
+      if (userId) {
+        this.chatService.updateUserStatus(userId, true);
+      }
+    });
+    this.loadRecentChats();
+    this.loadActiveUsers();
   }
 
-  sendMessage() {
-    if (this.newMessage.trim() !== '') {
-      this.messages.push({ sender: this.currentUser, content: this.newMessage });
-      this.newMessage = '';
-      // Save the message to Firestore
-      this.saveMessageToFirestore(this.currentUser, this.newMessage);
+  ngOnDestroy() {
+    if (this.chatSubscription) {
+      this.chatSubscription.unsubscribe();
+    }
+    if (this.activeUsersSubscription) {
+      this.activeUsersSubscription.unsubscribe();
+    }
+    if (this.currentUserId) {
+      this.chatService.updateUserStatus(this.currentUserId, false);
     }
   }
+  loadRecentChats() {
+    this.chatSubscription = this.chatService.getRecentChats().subscribe(
+      (chats) => {
+        console.log('Recent chats data in ChatPage:', chats); // Log recent chats data
+        this.recentChats = chats;
+      },
+      (error) => {
+        
+        console.error('Error loading recent chats:', error);
+      }
+    );
+  }
 
-  private saveMessageToFirestore(sender: string, content: string) {
-    // Implement the logic to save the message to Firestore
-    console.log('Saving message to Firestore:', { sender, content });
+
+  
+  
+  
+  
+  
+
+  loadActiveUsers() {
+    this.activeUsersSubscription = this.chatService.getActiveUsers().subscribe(
+      (users) => {
+        this.activeUsers = users.map(user => ({
+          ...user,
+          avatar: user.profilePictureUrl || './assets/profile-placeholder.jpg' // Use default if no picture
+        }));
+        console.log("Active users:", this.activeUsers);  // Debugging line
+      },
+      (error) => {
+        console.error('Error loading active users:', error);
+      }
+    );
+  }
+  
+
+  onSegmentChange(event: any) {
+    this.segmentValue = event.detail.value;
+    if (this.segmentValue === 'active') {
+      this.loadActiveUsers();
+    }
+  }
+  
+  async startChat(userId: string) {
+    console.log('StartChat called with userId:', userId);
+  
+    try {
+      const chatId = await this.chatService.createOrGetChat(userId);
+      console.log('Received chatId:', chatId);
+  
+      if (chatId) {
+        console.log('Navigating to chat-room with ID:', chatId);
+        this.router.navigate([`/chat-room/${chatId}`]);
+      } else {
+        console.error('Chat ID is undefined or null, cannot navigate to chat room');
+      }
+    } catch (error) {
+      console.error('Error in startChat:', error);
+    }
   }
 }
