@@ -43,7 +43,7 @@ interface User {
   uid: string;
   fullName: string;
   role: string;
-  avatar?: string;
+  profilePictureUrl?: string;
 }
 
 @Injectable({
@@ -138,40 +138,37 @@ export class ChatService {
   
   
 
-getOtherUser(chatId: string): Observable<any> {
-  return combineLatest([
-    this.firestore.doc(`chats/${chatId}`).valueChanges(),
-    from(this.authService.getCurrentUserId()),
-  ]).pipe(
-    switchMap(([chat, currentUserId]: [any, string | null]) => {
-      if (!currentUserId) throw new Error('User not authenticated');
-      const otherUserId = chat.participants.find(
-        (id) => id !== currentUserId
-      );
+  getOtherUser(chatId: string): Observable<any> {
+    return combineLatest([
+      this.firestore.doc(`chats/${chatId}`).valueChanges(),
+      from(this.authService.getCurrentUserId()),
+    ]).pipe(
+      switchMap(([chat, currentUserId]: [any, string | null]) => {
+        if (!currentUserId) throw new Error('User not authenticated');
+        const otherUserId = chat.participants.find(
+          (id) => id !== currentUserId
+        );
 
-      if (!otherUserId) return of({ fullName: 'User', isOnline: false });
+        if (!otherUserId) return of({ fullName: 'User', isOnline: false });
 
-      // Fetch user profile data
-      const userDoc$ = this.firestore.doc<User>(`users/${otherUserId}`).valueChanges();
-      
-      // Fetch online status data
-      const statusDoc$ = this.firestore.doc<UserStatus>(`userStatus/${otherUserId}`).valueChanges();
+        const userDoc$ = this.firestore.doc<User>(`users/${otherUserId}`).valueChanges();
+        const statusDoc$ = this.firestore.doc<UserStatus>(`userStatus/${otherUserId}`).valueChanges();
 
-      return combineLatest([userDoc$, statusDoc$]).pipe(
-        map(([user, status]) => ({
-          uid: otherUserId,
-          fullName: user?.fullName || 'User',
-          avatar: user?.avatar || './assets/profile-placeholder.jpg',
-          isOnline: status?.isOnline || false,
-        }))
-      );
-    }),
-    catchError((error) => {
-      console.error('Error loading other user:', error);
-      return of({ fullName: 'User', isOnline: false });
-    })
-  );
-}
+        return combineLatest([userDoc$, statusDoc$]).pipe(
+          map(([user, status]) => ({
+            uid: otherUserId,
+            fullName: user?.fullName || 'User',
+            profilePictureUrl: user?.profilePictureUrl || './assets/profile-placeholder.jpg', // Updated field name
+            isOnline: status?.isOnline || false,
+          }))
+        );
+      }),
+      catchError((error) => {
+        console.error('Error loading other user:', error);
+        return of({ fullName: 'User', isOnline: false });
+      })
+    );
+  }
 
 getRecentChats(): Observable<Chat[]> {
   return this.authService.getUserData$().pipe(
@@ -193,15 +190,19 @@ getRecentChats(): Observable<Chat[]> {
               const otherUserId = chat.participants.find(id => id !== userId);
               
               if (otherUserId) {
+                console.log('Fetching user document:', `users/${otherUserId}`);
+                
                 return this.firestore.doc<User>(`users/${otherUserId}`).valueChanges().pipe(
                   map((otherUser) => {
-                    console.log('Other user data:', otherUser); // Debugging line
+                    console.log('Fetched user data:', otherUser); // Debug log
                     return {
                       ...chat,
                       otherParticipant: {
                         uid: otherUserId,
                         fullName: otherUser?.fullName || 'Unknown User',
-                        profilePictureUrl: otherUser?.avatar || './assets/profile-placeholder.jpg',
+                        profilePictureUrl: otherUser?.profilePictureUrl && otherUser.profilePictureUrl.trim() !== '' 
+                          ? otherUser.profilePictureUrl 
+                          : './assets/profile-placeholder.jpg',
                       },
                       lastMessage: chat.lastMessage || { content: 'No messages yet' },
                     };
@@ -211,12 +212,20 @@ getRecentChats(): Observable<Chat[]> {
 
               return of({
                 ...chat,
-                otherParticipant: { uid: '', fullName: 'Unknown User', profilePictureUrl: './assets/profile-placeholder.jpg' },
+                otherParticipant: {
+                  uid: '',
+                  fullName: 'Unknown User',
+                  profilePictureUrl: './assets/profile-placeholder.jpg'
+                },
                 lastMessage: chat.lastMessage || { content: 'No messages yet' },
               });
             });
 
             return combineLatest(userObservables);
+          }),
+          map(chats => {
+            console.log('Final processed chats:', chats); // Debug log
+            return chats;
           }),
           catchError((error) => {
             console.error('Error fetching recent chats:', error);

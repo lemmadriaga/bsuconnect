@@ -1,4 +1,4 @@
-  <ion-header>
+  <ion-header class="ion-no-border">
     <ion-toolbar>
       <ion-buttons slot="start">
         <ion-button (click)="goBack()">
@@ -7,7 +7,7 @@
       </ion-buttons>
       <div class="user-info">
         <ion-avatar slot="start">
-          <img [src]="otherUser?.avatar || './assets/profile-placeholder.jpg'" />
+          <img [src]="otherUser?.profilePictureUrl|| './assets/profile-placeholder.jpg'" />
         </ion-avatar>
         <div class="user-details">
           <ion-label class="user-name">{{ otherUser?.fullName || 'User' }}</ion-label>
@@ -22,7 +22,7 @@
 
 
 
-  <ion-content>
+  <ion-content scrollEvents="true">
     <div class="message-list">
       <div
         *ngFor="let message of messages"
@@ -57,5 +57,8 @@
       
       
       </ion-item>
+      <div class="text-counter" *ngIf="newMessage?.length">
+        {{ newMessage.length }}/1000
+      </div>
     </ion-toolbar>
   </ion-footer>
