@@ -134,17 +134,14 @@ export class AuthenticationService {
   getUserData$(): Observable<any> {
     return this.afAuth.authState.pipe(
       switchMap(user => {
-        console.log('Auth state user:', user); // Log the auth state
-  
         if (user) {
           return this.firestore.doc(`users/${user.uid}`).valueChanges().pipe(
             map(userData => {
-              console.log('User data from Firestore:', userData); // Log retrieved user data
               return userData;
             })
           );
         } else {
-          console.warn('No authenticated user'); // Log if no user is authenticated
+          console.warn('No authenticated user'); 
           return of(null);
         }
       })
@@ -205,7 +202,6 @@ export class AuthenticationService {
     );
   }
 
-  // Method to get the user’s full name from Firestore
 getUserName(): Observable<string | null> {
   return this.getUserId().pipe(
       switchMap(userId => {

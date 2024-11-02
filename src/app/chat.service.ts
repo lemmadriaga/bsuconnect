@@ -9,6 +9,10 @@ import { BehaviorSubject } from 'rxjs';
 import 'firebase/compat/firestore';
 import { serverTimestamp } from '@angular/fire/firestore';
 
+interface UserStatus {
+  isOnline: boolean;
+}
+
 
 interface Message {
   id: string;
@@ -134,20 +138,40 @@ export class ChatService {
   
   
 
-  getOtherUser(chatId: string): Observable<any> {
-    return combineLatest([
-      this.firestore.doc(`chats/${chatId}`).valueChanges(),
-      from(this.authService.getCurrentUserId()),
-    ]).pipe(
-      switchMap(([chat, currentUserId]: [any, string | null]) => {
-        if (!currentUserId) throw new Error('User not authenticated');
-        const otherUserId = chat.participants.find(
-          (id) => id !== currentUserId
-        );
-        return this.firestore.doc(`users/${otherUserId}`).valueChanges();
-      })
-    );
-  }
+getOtherUser(chatId: string): Observable<any> {
+  return combineLatest([
+    this.firestore.doc(`chats/${chatId}`).valueChanges(),
+    from(this.authService.getCurrentUserId()),
+  ]).pipe(
+    switchMap(([chat, currentUserId]: [any, string | null]) => {
+      if (!currentUserId) throw new Error('User not authenticated');
+      const otherUserId = chat.participants.find(
+        (id) => id !== currentUserId
+      );
+
+      if (!otherUserId) return of({ fullName: 'User', isOnline: false });
+
+      // Fetch user profile data
+      const userDoc$ = this.firestore.doc<User>(`users/${otherUserId}`).valueChanges();
+      
+      // Fetch online status data
+      const statusDoc$ = this.firestore.doc<UserStatus>(`userStatus/${otherUserId}`).valueChanges();
+
+      return combineLatest([userDoc$, statusDoc$]).pipe(
+        map(([user, status]) => ({
+          uid: otherUserId,
+          fullName: user?.fullName || 'User',
+          avatar: user?.avatar || './assets/profile-placeholder.jpg',
+          isOnline: status?.isOnline || false,
+        }))
+      );
+    }),
+    catchError((error) => {
+      console.error('Error loading other user:', error);
+      return of({ fullName: 'User', isOnline: false });
+    })
+  );
+}
 
   getRecentChats(): Observable<Chat[]> {
     return this.authService.getUserData$().pipe(
@@ -407,4 +431,5 @@ export class ChatService {
       .doc(userId)
       .set({ isOnline }, { merge: true });
   }
+  
 }
