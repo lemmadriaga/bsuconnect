@@ -120,11 +120,10 @@ export class AuthenticationService {
     return this.afAuth.sendPasswordResetEmail(email);
   }
 
-  // Sign out
   logoutUser(): Promise<void> {
     return this.afAuth.currentUser.then(user => {
       if (user) {
-        this.updateUserStatus(user.uid, false); // Set user offline on logout
+        this.updateUserStatus(user.uid, false); // Set offline status on logout
       }
       return this.afAuth.signOut();
     });

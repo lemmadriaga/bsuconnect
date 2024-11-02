@@ -33,7 +33,6 @@ export class ChatPage implements OnInit, OnDestroy {
     this.loadRecentChats();
     this.loadActiveUsers();
   }
-
   ngOnDestroy() {
     if (this.chatSubscription) {
       this.chatSubscription.unsubscribe();
@@ -41,9 +40,10 @@ export class ChatPage implements OnInit, OnDestroy {
     if (this.activeUsersSubscription) {
       this.activeUsersSubscription.unsubscribe();
     }
-    if (this.currentUserId) {
-      this.chatService.updateUserStatus(this.currentUserId, false);
-    }
+    // Remove or comment out this line
+    // if (this.currentUserId) {
+    //   this.chatService.updateUserStatus(this.currentUserId, false);
+    // }
   }
   loadRecentChats() {
     this.chatSubscription = this.chatService.getRecentChats().subscribe(

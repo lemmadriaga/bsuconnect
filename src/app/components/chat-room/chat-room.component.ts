@@ -46,10 +46,12 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
-    if (this.currentUserId) {
-      this.chatService.updateUserStatus(this.currentUserId, false);
-    }
+    // Remove or comment out this line
+    // if (this.currentUserId) {
+    //   this.chatService.updateUserStatus(this.currentUserId, false);
+    // }
   }
+  
   
 
   goBack() {

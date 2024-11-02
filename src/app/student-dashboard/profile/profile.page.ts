@@ -58,8 +58,12 @@ export class ProfilePage implements OnInit {
   }
 
   signOut() {
-    this.authService.logoutUser();
-    this.router.navigate(['/authentication'])
+    this.authService.logoutUser().then(() => {
+      console.log('User signed out successfully');
+      this.router.navigate(['/authentication']);
+    }).catch(error => {
+      console.error('Error signing out:', error);
+    });
   }
 
   // Example method to navigate to ForumPage
@@ -69,7 +73,7 @@ export class ProfilePage implements OnInit {
         this.router.navigate(['/forum'], { queryParams: { userId: userData.uid, avatar: userData.profilePictureUrl, role: userData.role } });
       }
     });
-  }
+  } 
 
 
 
