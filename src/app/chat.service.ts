@@ -150,67 +150,69 @@ export class ChatService {
   }
 
   getRecentChats(): Observable<Chat[]> {
-    
     return this.authService.getUserData$().pipe(
-        switchMap((profile) => {
-            const userId = profile?.uid;
-            if (!userId) {
-                console.error('User ID not found');
-                throw new Error('User ID not found');
-            }
-
-            const query = (ref) => ref.where('participants', 'array-contains', userId);
-
-            return this.firestore
-                .collection<Chat>('chats', query)
-                .valueChanges({ idField: 'id' })
-                .pipe(
-                    switchMap((chats) => {
-                        console.log('Fetched chats:', chats); // Log all chats initially
-
-                        const userObservables = chats.map((chat) => {
-                            const otherUserId = chat.participants.find(id => id !== userId);
-                            console.log(`For chat ${chat.id}, found otherUserId:`, otherUserId); // Log other user ID
-
-                            if (otherUserId) {
-                              return this.firestore.doc<User>(`users/${otherUserId}`).valueChanges().pipe(
-                                map((otherUser) => {
-                                    console.log(`Data for other user ${otherUserId}:`, otherUser); // Log other user's data
-                            
-                                    return {
-                                        ...chat,
-                                        otherParticipant: {
-                                            uid: otherUserId,
-                                            fullName: otherUser?.fullName || 'Unknown User', // Use 'fullName' if it's the field in Firestore
-                                            profilePictureUrl: otherUser?.avatar || './assets/profile-placeholder.jpg',
-                                        },
-                                        lastMessage: chat.lastMessage || { content: 'No messages yet' },
-                                        unreadCount: chat.unreadCount || 0,
-                                    };
-                                })
-                            );
-                            
-                            }
-
-                            return of({
-                                ...chat,
-                                otherParticipant: { uid: '', fullName: 'Unknown User', profilePictureUrl: './assets/profile-placeholder.jpg' },
-                                lastMessage: chat.lastMessage || { content: 'No messages yet' },
-                                unreadCount: chat.unreadCount || 0,
-                            });
-                        });
-
-                        return combineLatest(userObservables);
-                    }),
-                    catchError((error) => {
-                        console.error('Error fetching recent chats:', error);
-                        return of([]);
-                    })
-                );
-        })
+      switchMap((profile) => {
+        const userId = profile?.uid;
+        if (!userId) {
+          console.error('User ID not found');
+          throw new Error('User ID not found');
+        }
+  
+        const query = (ref) => ref.where('participants', 'array-contains', userId);
+  
+        return this.firestore
+          .collection<Chat>('chats', query)
+          .valueChanges({ idField: 'id' })
+          .pipe(
+            switchMap((chats) => {
+              const userObservables = chats.map((chat) => {
+                const otherUserId = chat.participants.find(id => id !== userId);
+                
+                if (otherUserId) {
+                  return this.firestore.doc<User>(`users/${otherUserId}`).valueChanges().pipe(
+                    switchMap((otherUser) =>
+                      this.firestore.collection(`chats/${chat.id}/messages`, ref =>
+                        ref.where('readBy', 'array-contains', userId)
+                      ).valueChanges().pipe(
+                        map((messages) => {
+                          const unreadCount = messages.length;
+  
+                          return {
+                            ...chat,
+                            otherParticipant: {
+                              uid: otherUserId,
+                              fullName: otherUser?.fullName || 'Unknown User',
+                              profilePictureUrl: otherUser?.avatar || './assets/profile-placeholder.jpg',
+                            },
+                            lastMessage: chat.lastMessage || { content: 'No messages yet' },
+                            unreadCount: unreadCount,
+                          };
+                        })
+                      )
+                    )
+                  );
+                }
+  
+                return of({
+                  ...chat,
+                  otherParticipant: { uid: '', fullName: 'Unknown User', profilePictureUrl: './assets/profile-placeholder.jpg' },
+                  lastMessage: chat.lastMessage || { content: 'No messages yet' },
+                  unreadCount: 0,
+                });
+              });
+  
+              return combineLatest(userObservables);
+            }),
+            catchError((error) => {
+              console.error('Error fetching recent chats:', error);
+              return of([]);
+            })
+          );
+      })
     );
-}
-
+  }
+  
+  
 
 
 

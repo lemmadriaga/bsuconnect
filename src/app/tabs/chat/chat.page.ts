@@ -52,11 +52,11 @@ export class ChatPage implements OnInit, OnDestroy {
         this.recentChats = chats;
       },
       (error) => {
-        
         console.error('Error loading recent chats:', error);
       }
     );
   }
+  
 
 
   
