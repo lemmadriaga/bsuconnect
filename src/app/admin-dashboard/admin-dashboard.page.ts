@@ -441,15 +441,6 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
         console.error("Invalid selectedEventId:", this.selectedEventId);
     }
 }
-
-
-
-
-
-  
-  
-  
-
 updateDepartmentChart(attendees: any[]) {
   // Filter attendees with 'present' status only
   const presentAttendees = attendees.filter(attendee => attendee.status === 'present');

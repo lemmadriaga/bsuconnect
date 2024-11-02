@@ -118,10 +118,10 @@ export class AuthenticationPage implements AfterViewInit {
                 await this.router.navigate(['/student-dashboard/forum']);
                 break;
               case 'alumni':
-                await this.router.navigate(['/alumni-dashboard']);
+                await this.router.navigate(['/alumni-dashboard/forum']);
                 break;
               case 'faculty':
-                await this.router.navigate(['/faculty-dashboard']);
+                await this.router.navigate(['/faculty-dashboard/forum']);
                 break;
               default:
                 console.error('Invalid role');
@@ -131,16 +131,16 @@ export class AuthenticationPage implements AfterViewInit {
           } else {
             // If no role is found, navigate back to login
             console.error('No role found');
-            await this.router.navigate(['/login']);
+            await this.router.navigate(['/authentication']);
           }
         } else {
           console.log('Provide correct login credentials');
-          await this.router.navigate(['/login']);
+          await this.router.navigate(['/authentication']);
         }
       } catch (error) {
         // Catch any error during login or role check and dismiss loading
         console.error('Error during sign-in:', error);
-        await this.router.navigate(['/login']);
+        await this.router.navigate(['/authentication']);
       } finally {
         // Ensure loading spinner is dismissed
         loading.dismiss();
@@ -170,13 +170,13 @@ export class AuthenticationPage implements AfterViewInit {
             await this.router.navigate(['/admin-dashboard']);
             break;
           case 'student':
-            await this.router.navigate(['/student-dashboard']);
+            await this.router.navigate(['/student-dashboard/forum']);
             break;
           case 'alumni':
-            await this.router.navigate(['/alumni-dashboard']);
+            await this.router.navigate(['/alumni-dashboard/forum']);
             break;
           case 'faculty':
-            await this.router.navigate(['/faculty-dashboard']);
+            await this.router.navigate(['/faculty-dashboard/forum']);
             break;
           default:
             console.error('Invalid role');
