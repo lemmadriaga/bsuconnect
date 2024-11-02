@@ -13,6 +13,10 @@ import { environment } from 'src/environments/environment';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FullCalendarModule } from '@fullcalendar/angular';
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideAuth, getAuth } from '@angular/fire/auth';
+import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+
 
 @NgModule({
   declarations: [AppComponent],
@@ -26,7 +30,8 @@ import { FullCalendarModule } from '@fullcalendar/angular';
     AngularFireAuthModule,
     AngularFirestoreModule,
     AngularFireStorageModule,
-    FullCalendarModule
+    FullCalendarModule,
+    
   ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],

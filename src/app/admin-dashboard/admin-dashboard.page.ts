@@ -13,6 +13,9 @@ import 'leaflet-control-geocoder';
 import { FullCalendarComponent } from '@fullcalendar/angular';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import listPlugin from '@fullcalendar/list';
+
 
 
 interface TabItem {
@@ -27,6 +30,7 @@ interface TabItem {
   styleUrls: ['./admin-dashboard.page.scss'],
 })
 export class AdminDashboardPage implements OnInit, AfterViewInit {
+  showEventDetailsModall= false;
   showEventDetailsModal = false;
   map: L.Map | null = null;
   marker: L.Marker | null = null;
@@ -128,6 +132,12 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       this.attendeesDepartmentChart.destroy(); // Destroy the chart instance
     }
   }
+  closeEventDetailsModall() {
+    this.showEventDetailsModall = false;
+    if (this.attendeesDepartmentChart) {
+      this.attendeesDepartmentChart.destroy(); // Destroy the chart instance
+    }
+  }
 
   ngOnInit() {
       this.loadEvents();
@@ -179,16 +189,29 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   }
   initializeCalendar() {
     this.calendarOptions = {
-      plugins: [dayGridPlugin, interactionPlugin],
+      plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
       initialView: 'dayGridMonth',
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: 'dayGridMonth,dayGridWeek',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
       },
-      events: [],
+      editable: true,
+      selectable: true,
+      weekends: true,
+      themeSystem: 'standard',
+      height: 'auto',
+      // Add your event handling here
       eventClick: this.handleEventClick.bind(this),
+      select: this.handleDateSelect.bind(this),
+      events: [] // Add your events here
     };
+  }
+
+
+  handleDateSelect(arg: any) {
+    // Handle date selection
+    console.log('Date selected:', arg);
   }
   loadEvents() {
     // Fetch events from Firestore
@@ -226,7 +249,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       date: eventClickInfo.event.start,
       ...eventClickInfo.event.extendedProps,
     };
-    this.showEventDetailsModal = true;
+    this.showEventDetailsModall = true;
   }
 
 

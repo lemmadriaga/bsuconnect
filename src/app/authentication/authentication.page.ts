@@ -186,7 +186,7 @@ export class AuthenticationPage implements AfterViewInit {
       }
     } catch (error) {
       console.error('Error during Google sign-in:', error);
-      await this.router.navigate(['/login']);
+      await this.router.navigate(['/authentication']);
     } finally {
       loading.dismiss();
     }

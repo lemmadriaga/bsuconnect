@@ -6,6 +6,8 @@ import { AdminDashboardPage } from './admin-dashboard.page';
 import { FormsModule } from '@angular/forms';
 import { PostManagementComponent } from '../components/post-management/post-management.component';
 
+import { FullCalendarModule } from '@fullcalendar/angular';
+
 
 const routes: Routes = [
   {
@@ -20,7 +22,8 @@ const routes: Routes = [
     FormsModule,
     IonicModule,
     RouterModule.forChild(routes),
+    FullCalendarModule
   ],
-  declarations: [AdminDashboardPage, PostManagementComponent,],
+  declarations: [AdminDashboardPage, PostManagementComponent],
 })
 export class AdminDashboardPageModule {}

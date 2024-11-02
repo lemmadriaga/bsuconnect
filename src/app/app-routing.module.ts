@@ -64,7 +64,11 @@ const routes: Routes = [
     {
       path: 'chat-room/:id',
       loadChildren: () => import('./components/chat-room/chat-room.module').then(m => m.ChatRoomModule)
-    },
+    },  {
+    path: 'reset-password',
+    loadChildren: () => import('./reset-password/reset-password.module').then( m => m.ResetPasswordPageModule)
+  },
+
   
 ];
 

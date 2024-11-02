@@ -5,6 +5,7 @@ import { AngularFireStorage } from '@angular/fire/compat/storage';
 import firebase from 'firebase/compat/app';
 import { from, Observable, of} from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
+import 'firebase/compat/auth';
 
 interface UserData {
   uid: string;
@@ -87,11 +88,11 @@ export class AuthenticationService {
   }
     
 
-  // Google sign-in
   googleSignIn(): Promise<firebase.auth.UserCredential> {
     const provider = new firebase.auth.GoogleAuthProvider();
     return this.afAuth.signInWithPopup(provider);
   }
+  
 
   // Get user role
   getUserRole$(): Observable<string | null> {
@@ -129,6 +130,9 @@ export class AuthenticationService {
     });
   }
   
+  async sendPasswordResetEmail(email: string) {
+    return await this.afAuth.sendPasswordResetEmail(email);
+  }
 
   getUserData$(): Observable<any> {
     return this.afAuth.authState.pipe(
