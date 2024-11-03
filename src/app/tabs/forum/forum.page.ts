@@ -5,6 +5,7 @@ import { AlertController } from '@ionic/angular';
 import { AngularFireStorage } from '@angular/fire/compat/storage'; // Import Firebase storage
 import { finalize } from 'rxjs/operators'; // To handle completion of the upload
 import { Timestamp } from 'firebase/firestore';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 @Component({
   selector: 'app-forum',
@@ -33,8 +34,31 @@ export class ForumPage implements OnInit {
     this.forumService.getPosts().subscribe((posts) => {
       this.posts = posts;
     });
+    this.listenForNotifications();
   }
-
+  listenForNotifications() {
+    PushNotifications.addListener('pushNotificationReceived', (notification) => {
+      console.log('Push notification received:', notification);
+  
+      // Display the notification content or update the UI as needed
+      // You can add custom handling based on notification data, e.g., showing an alert
+      if (notification.data.type === 'chat') {
+        // Handle chat notification
+        alert(`New message from ${notification.data.senderName}: ${notification.body}`);
+      } else if (notification.data.type === 'forum') {
+        // Handle forum notification
+        alert(`New forum post: ${notification.body}`);
+      }
+    });
+  }
+  async showNotificationAlert(title: string, message: string) {
+    const alert = await this.alertController.create({
+      header: title,
+      message: message,
+      buttons: ['OK'],
+    });
+    await alert.present();
+  }
   // Method to handle image selection
   onImageSelected(event: Event) {
     const fileInput = event.target as HTMLInputElement;

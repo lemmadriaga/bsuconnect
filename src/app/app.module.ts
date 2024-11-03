@@ -16,6 +16,7 @@ import { FullCalendarModule } from '@fullcalendar/angular';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideAuth, getAuth } from '@angular/fire/auth';
 import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { AngularFireMessagingModule } from '@angular/fire/compat/messaging';
 
 
 @NgModule({
@@ -31,6 +32,7 @@ import { provideFirestore, getFirestore } from '@angular/fire/firestore';
     AngularFirestoreModule,
     AngularFireStorageModule,
     FullCalendarModule,
+    AngularFireMessagingModule,
     
   ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],

@@ -6,6 +6,7 @@ import firebase from 'firebase/compat/app';
 import { from, Observable, of} from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import 'firebase/compat/auth';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 interface UserData {
   uid: string;
@@ -27,6 +28,22 @@ export class AuthenticationService {
     private storage: AngularFireStorage
   ) {}
 
+  async saveFCMToken(userId: string) {
+    // Request the FCM token from Push Notifications
+    PushNotifications.register();
+  
+    // Listen for successful registration to get the FCM token
+    PushNotifications.addListener('registration', async (tokenData) => {
+      const fcmToken = tokenData.value;
+  
+      // Save the token to Firestore under the user's document
+      await this.firestore.collection('users').doc(userId).update({
+        fcmToken: fcmToken
+      });
+    });
+  }
+  
+
   registerUser(
     email: string,
     password: string,
@@ -47,7 +64,7 @@ export class AuthenticationService {
             role: 'student',
             department,
           };
-          
+  
           return this.firestore.collection('users').doc(user.uid).set(userData)
             .then(() => {
               // Create an entry in `userStatus` collection for tracking online status
@@ -55,7 +72,10 @@ export class AuthenticationService {
                 uid: user.uid,
                 online: false,
                 lastActive: new Date()
-              }).then(() => userData); // Return userData after both writes
+              }).then(async () => {
+                await this.saveFCMToken(user.uid); // Save FCM token after registration
+                return userData;
+              });
             });
         } else {
           throw new Error('User creation failed');
@@ -67,18 +87,21 @@ export class AuthenticationService {
       });
   }
   
+  
 
   // Sign in existing user
   loginUser(email: string, password: string): Promise<firebase.auth.UserCredential> {
     return this.afAuth.signInWithEmailAndPassword(email, password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         const user = userCredential.user;
         if (user) {
-          this.updateUserStatus(user.uid, true); // Set online status on login
+          await this.updateUserStatus(user.uid, true); // Set online status on login
+          await this.saveFCMToken(user.uid); // Save or update FCM token on login
         }
         return userCredential;
       });
   }
+  
   updateUserStatus(userId: string, online: boolean): Promise<void> {
     return this.firestore.collection('userStatus').doc(userId).set({
       uid: userId,

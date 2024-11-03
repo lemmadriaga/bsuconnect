@@ -38,18 +38,19 @@
               ],
             "styles": ["src/global.scss", "src/theme/variables.scss", "node_modules/leaflet/dist/leaflet.css",
             "node_modules/mapbox-gl/dist/mapbox-gl.css",
-            "node_modules/@mapbox/mapbox-gl-geocoder/lib/mapbox-gl-geocoder.css",   "node_modules/@fullcalendar/core/main.css",
-            "node_modules/@fullcalendar/daygrid/main.css",
-            "node_modules/@fullcalendar/timegrid/main.css",
-            "node_modules/@fullcalendar/list/main.css"],
-            "scripts": []
+            "node_modules/@mapbox/mapbox-gl-geocoder/lib/mapbox-gl-geocoder.css"],
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "@fullcalendar/core",
+              "leaflet"
+            ]
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1.5mb",
+                  "maximumWarning": "1.75mb",
                   "maximumError": "2mb"
                 },
                 {
@@ -121,13 +122,21 @@
                 "output": "./svg"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss", "node_modules/leaflet/dist/leaflet.css", 
-            "node_modules/mapbox-gl/dist/mapbox-gl.css",
-            "node_modules/@mapbox/mapbox-gl-geocoder/lib/mapbox-gl-geocoder.css",   "node_modules/@fullcalendar/core/main.css",
-            "node_modules/@fullcalendar/daygrid/main.css",
-            "node_modules/@fullcalendar/timegrid/main.css",
-            "node_modules/@fullcalendar/list/main.css"],
-            "scripts": []
+            "styles": [
+            "src/global.scss",
+  "src/theme/variables.scss",
+  "node_modules/leaflet/dist/leaflet.css",
+  "node_modules/mapbox-gl/dist/mapbox-gl.css",
+  "node_modules/@mapbox/mapbox-gl-geocoder/lib/mapbox-gl-geocoder.css",
+  "node_modules/@fullcalendar/core/main.min.css",
+  "node_modules/@fullcalendar/daygrid/main.min.css",
+  "node_modules/@fullcalendar/timegrid/main.min.css",
+  "node_modules/@fullcalendar/list/main.min.css"],
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "@fullcalendar/core",
+              "leaflet"
+            ]
           },
           "configurations": {
             "ci": {

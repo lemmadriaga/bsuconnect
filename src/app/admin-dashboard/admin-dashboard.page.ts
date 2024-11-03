@@ -11,10 +11,13 @@ import { AngularFireStorage } from '@angular/fire/compat/storage';
 import * as L from 'leaflet';
 import 'leaflet-control-geocoder';
 import { FullCalendarComponent } from '@fullcalendar/angular';
+import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
+import interactionPlugin from '@fullcalendar/interaction';
+
+
 
 
 

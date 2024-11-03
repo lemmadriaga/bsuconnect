@@ -3,6 +3,7 @@ import { ChatService } from '../../chat.service';
 import { AuthenticationService } from '../../authentication.service';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 @Component({
   selector: 'app-chat',
@@ -32,7 +33,28 @@ export class ChatPage implements OnInit, OnDestroy {
     });
     this.loadRecentChats();
     this.loadActiveUsers();
+    this.listenForNotifications();
+
+
   }
+
+
+listenForNotifications() {
+  PushNotifications.addListener('pushNotificationReceived', (notification) => {
+    console.log('Push notification received:', notification);
+
+    // Display the notification content or update the UI as needed
+    // You can add custom handling based on notification data, e.g., showing an alert
+    if (notification.data.type === 'chat') {
+      // Handle chat notification
+      alert(`New message from ${notification.data.senderName}: ${notification.body}`);
+    } else if (notification.data.type === 'forum') {
+      // Handle forum notification
+      alert(`New forum post: ${notification.body}`);
+    }
+  });
+}
+
   ngOnDestroy() {
     if (this.chatSubscription) {
       this.chatSubscription.unsubscribe();
