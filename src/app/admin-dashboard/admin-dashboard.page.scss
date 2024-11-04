@@ -5,12 +5,18 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
 .dashboard-container {
   display: flex;
   height: 100vh;
 }
+
+.calendar-container {
+  width: 100%;
+  max-width: 100%; /* Ensures full width within the container */
+  overflow-x: auto; /* Adds horizontal scrolling if necessary */
+  margin: 0 auto;
+}
+
 
 .sidebar {
   position: fixed;
@@ -21,12 +27,18 @@
   z-index: 1000;
   width: 16rem; /* Fixed width to keep it in place */
   margin-top: 4%;
+  background-color: #f8f9fa;
+  overflow-y: auto; /* Allows scrolling within the sidebar */
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(0);
 }
 
 .main-content {
   margin-left: 16rem; /* Matches the width of the sidebar */
-  overflow-y: auto; /* Enables scrolling only in the main content */
-  padding-bottom: 1rem;
+  padding: 1rem;
+  width: calc(100% - 16rem);
+  overflow-y: auto;
+  transition: margin-left 0.3s ease-in-out;
 }
 .chart-container {
   width: 100%;
@@ -139,8 +151,6 @@
   }
 }
 :host {
-
-
   #map {
     width: 100%;
     height: 400px;
@@ -149,92 +159,112 @@
     border-radius: 4px;
   }
 }
+// .grid {
+//   &.grid-cols-1 {
+//     grid-template-columns: 1fr;
+//   }
+//   &.sm\\:grid-cols-2 {
+//     grid-template-columns: repeat(2, minmax(0, 1fr));
+//   }
+//   &.md\\:grid-cols-3 {
+//     grid-template-columns: repeat(3, minmax(0, 1fr));
+//   }
+// }
+
+// // Flexbox adjustments for mobile
+// .flex {
+//   &.lg\\:flex-row {
+//     @media (min-width: 1024px) {
+//       flex-direction: row;
+//     }
+//   }
+// }
 
 /* Add this to your component's CSS file (e.g., your-component.scss) */
 
 :host ::ng-deep {
   .calendar-container {
     @apply bg-white rounded-lg shadow-lg p-6;
-  
+
     /* Header Toolbar */
     .fc-toolbar-title {
       @apply text-xl font-bold text-gray-800;
     }
-  
+
     .fc-button-primary {
       @apply bg-red-700 border-red-700 text-white px-4 py-2 rounded;
-      
+
       &:hover {
         @apply bg-red-800 border-red-800;
       }
-      
+
       &:not(:disabled):active,
       &:not(:disabled).fc-button-active {
         @apply bg-red-800 border-red-800;
       }
     }
-  
+
     /* Calendar Grid */
     .fc-scrollgrid {
       @apply border-gray-200;
     }
-  
+
     .fc-col-header-cell {
       @apply bg-gray-50;
-      
+
       .fc-col-header-cell-cushion {
         @apply text-gray-700 font-semibold py-3;
       }
     }
-  
+
     .fc-daygrid-day {
       @apply hover:bg-gray-50;
-      
+
       .fc-daygrid-day-number {
         @apply text-gray-700 font-medium;
       }
     }
-  
+
     /* Events */
     .fc-event {
       @apply bg-red-600 border-red-700 cursor-pointer;
-      
+
       &:hover {
         @apply bg-red-700;
       }
     }
-  
+
     /* Today */
     .fc-day-today {
       @apply bg-red-50;
     }
-  
+
     /* Time Grid */
     .fc-timegrid-slot {
       @apply border-gray-100;
     }
-  
+
     .fc-timegrid-slot-label {
       @apply text-gray-600;
     }
-  
+
     /* List View */
     .fc-list-day-cushion {
       @apply bg-gray-50;
     }
-  
+
     .fc-list-event:hover td {
       @apply bg-gray-50;
     }
-  
+
     /* Popover */
     .fc-popover {
       @apply bg-white shadow-lg rounded-lg;
-      
+
       .fc-popover-header {
         @apply bg-gray-50 px-4 py-2;
       }
-      
+
       .fc-popover-body {
         @apply p-2;
       }
@@ -242,11 +272,62 @@
   }
 }
 
-.modal-overlay{
-  z-index: 1000;
-  pointer-events: none;
-}
+// .modal-overlay {
+//   z-index: 1000;
+//   pointer-events: none;
+// }
 
 .modal-content {
   pointer-events: auto;
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    position: fixed;
+    height: 100vh;
+    width: 16rem;
+  }
+  .main-content {
+    margin-left: 16rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* Sidebar hides on smaller screens */
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .calendar-container {
+    max-width: 60%; /* Adjust for desktop screens */
+  }
+
+  /* Sidebar toggle visibility */
+  .sidebar.active {
+    transform: translateX(0);
+  }
+
+  /* Adjust main content margin when sidebar is hidden */
+  .main-content {
+    margin-left: 0 !important;
+  }
+}
+/* Mobile view adjustments */
+@media (max-width: 768px) {
+  .main-content {
+    width: 100%; /* Full width on small screens */
+  }
+  .sidebar{
+    margin-top: 15%;
+  }
+
+  .calendar-container {
+    width: 100%; /* Full width on smaller screens */
+  }
+
+
+}
+@media (min-width: 768px) {
+  .calendar-container {
+    max-width: 100%; /* Adjust as needed for larger screens */
+  }
 }

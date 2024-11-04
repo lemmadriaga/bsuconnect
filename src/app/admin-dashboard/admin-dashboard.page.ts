@@ -16,6 +16,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
+import { HostListener } from '@angular/core';
 
 
 
@@ -33,6 +34,8 @@ interface TabItem {
   styleUrls: ['./admin-dashboard.page.scss'],
 })
 export class AdminDashboardPage implements OnInit, AfterViewInit {
+  isSidebarVisible = true;
+  isLargeScreen = window.innerWidth >= 1024;
   showEventDetailsModall= false;
   showEventDetailsModal = false;
   map: L.Map | null = null;
@@ -202,14 +205,14 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       editable: true,
       selectable: true,
       weekends: true,
-      themeSystem: 'standard',
-      height: 'auto',
-      // Add your event handling here
-      eventClick: this.handleEventClick.bind(this),
-      select: this.handleDateSelect.bind(this),
-      events: [] // Add your events here
+      height: 'auto', // Let calendar height adjust based on content
+      aspectRatio: 1.5, // Adjust this to control calendar width
+      eventDisplay: 'block', // Ensure events take up space
+      events: [] // Your events data here
     };
+    
   }
+  
 
 
   handleDateSelect(arg: any) {
@@ -244,6 +247,12 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       this.calendarOptions.events = [...calendarEvents, ...philippineHolidays];
     });
   }
+  convertToDate(timestamp: any): Date {
+    if (timestamp && timestamp.seconds) {
+        return new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
+    }
+    return timestamp; // In case it's already a Date
+}
 
   // Handle event click to show event details
   handleEventClick(eventClickInfo) {
@@ -608,6 +617,9 @@ setLocationFromAddress() {
   });
 }
 
+toggleSidebar() {
+  this.isSidebarVisible = !this.isSidebarVisible;
+}
 
 
 
