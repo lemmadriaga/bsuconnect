@@ -55,7 +55,7 @@ form {
 }
 
 .image2 {
-  width: 50%;
+  width: 30%;
   margin-bottom: 10px;
 }
 
@@ -228,12 +228,19 @@ form.sign-in-form {
   margin: 10px 0;
   cursor: pointer;
   transition: 0.5s;
+
+  &:disabled {
+    background-color: #cccccc; 
+    color: #888888;          
+    cursor: not-allowed;      
+  }
 }
 
 .btn:hover {
   background-color: #fff;
   color: #CFA865;
   border-color: #CFA865;
+  border: 1px solid;
 }
 
 .panels-container {
@@ -269,21 +276,32 @@ form.sign-in-form {
 .panel {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  justify-content: space-around;
+  align-items: center; 
+  justify-content: center; 
   text-align: center;
   z-index: 6;
+  height: 100%; /* Full height to fill the panel */
+  padding: 3rem;
+}
+
+.left-panel .content, 
+.right-panel .content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+  text-align: center;
 }
 
 .left-panel {
   pointer-events: all;
-  padding: 3rem 17% 2rem 12%;
+  padding: 3rem;
 }
 
 .right-panel {
   pointer-events: none;
-  padding: 3rem 12% 2rem 17%;
+  padding: 3rem;
 }
+
 
 .panel .content {
   color: #fff;
@@ -298,10 +316,15 @@ form.sign-in-form {
 }
 
 .panel .content p {
-  font-size: 1rem;
-  font-family: "Poppins-Regular", sans-serif;
-  margin-bottom: 20px;
+  font-size: 1rem; 
+  line-height: 1.5; 
+  color: #ffffff; 
+  max-width: 80%; 
+  margin: 0 auto; 
+  margin-top: 10px;
+  font-weight: 400; 
 }
+
 
 .btn.transparent {
   margin: 0;
@@ -462,6 +485,38 @@ form.sign-in-form {
     transform: translate(-50%, 0);
   }
 }
+@media (max-width: 600px) {
+  .panel .content p {
+    font-size: 0.9rem; /* Slightly reduce font size */
+    line-height: 1.4; /* Adjust line height for smaller screens */
+    max-width: 90%; /* Make text width more flexible */
+    padding: 0 10px; /* Add padding for spacing on smaller screens */
+    text-align: center; /* Center-align text for readability */
+    font-family: 'Poppins', sans-serif;
+    margin-top: 5%;
+  }
+
+  .panel .content h3 {
+    font-size: 1.2rem;
+    margin-top: 3%; /* Reduce title size on small screens */
+  }
+
+  .btn.transparent {
+    width: 140px; /* Adjust button width for smaller screens */
+    height: 40px;
+    font-size: 0.8rem; /* Slightly smaller font size for the button */
+  }
+
+  /* Adjust padding for panel */
+  .left-panel, .right-panel {
+    padding: 2rem 5%; /* Add responsive padding */
+  }
+  
+  .panel .content {
+    padding: 0 1rem; /* Add padding around content for small screens */
+  }
+}
+
 
 @media (max-width: 570px) {
   form {

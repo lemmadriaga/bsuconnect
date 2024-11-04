@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 ion-content {
   --background: #f4f5f8;
 }
@@ -11,7 +10,6 @@ ion-content {
   background: #f4f5f8;
   padding: 0;
   text-align: center;
-  
 
   img {
     width: 100%;
@@ -68,7 +66,10 @@ ion-content {
 
     img {
       border-radius: 50%;
-      border: 2px solid #4a90e2;
+      border: 2px solid #900;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   }
 
@@ -90,6 +91,20 @@ ion-content {
   .status-icon {
     font-size: 12px;
     margin-left: 8px;
+  }
+}
+
+.active-section ion-avatar {
+  width: 48px;
+  height: 48px;
+  margin-right: 16px;
+
+  img {
+    border-radius: 50%;
+    border: 2px solid #900;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the image is cropped to fit the circle */
   }
 }
 
@@ -119,6 +134,3 @@ ion-badge {
   align-items: center;
   justify-content: center;
 }
-
-
-

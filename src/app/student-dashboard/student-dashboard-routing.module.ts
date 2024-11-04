@@ -10,34 +10,40 @@ const routes: Routes = [
     children: [
       {
         path: 'profile',
-        loadChildren: () => import('./profile/profile.module').then( m => m.ProfilePageModule)
+        loadChildren: () =>
+          import('./profile/profile.module').then((m) => m.ProfilePageModule),
       },
       {
         path: 'chat',
-        loadChildren:() => import('../tabs/chat/chat.module').then( m => m.ChatPageModule)
+        loadChildren: () =>
+          import('../tabs/chat/chat.module').then((m) => m.ChatPageModule),
       },
       {
         path: 'forum',
-        loadChildren: () => import('../tabs/forum/forum.module').then( m => m.ForumPageModule)
+        loadChildren: () =>
+          import('../tabs/forum/forum.module').then((m) => m.ForumPageModule),
       },
       {
         path: 'events',
-        loadChildren: () => import('../tabs/events/events.module').then( m => m.EventsPageModule)
+        loadChildren: () =>
+          import('../tabs/events/events.module').then(
+            (m) => m.EventsPageModule
+          ),
       },
       {
         path: 'event-details',
-        loadChildren: () => import('../tabs/event-details/event-details.module').then( m => m.EventDetailsPageModule)
+        loadChildren: () =>
+          import('../tabs/event-details/event-details.module').then(
+            (m) => m.EventDetailsPageModule
+          ),
       },
-      
-    ]
+    ],
   },
   {
     path: 'profile',
-    loadChildren: () => import('./profile/profile.module').then( m => m.ProfilePageModule)
+    loadChildren: () =>
+      import('./profile/profile.module').then((m) => m.ProfilePageModule),
   },
-
-
-
 ];
 
 @NgModule({

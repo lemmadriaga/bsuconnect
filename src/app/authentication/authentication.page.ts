@@ -13,6 +13,7 @@ import { take } from 'rxjs';
 export class AuthenticationPage implements AfterViewInit {
   regForm: FormGroup;
   loginForm: FormGroup;
+  errorMessage: string | null = null;
 
   constructor(
     public formBuilder: FormBuilder,
@@ -92,24 +93,18 @@ export class AuthenticationPage implements AfterViewInit {
 
     if (this.loginForm?.valid) {
       try {
-        // Attempt to log in the user
         const user = await this.authService.loginUser(
           this.loginForm.value.email,
           this.loginForm.value.password
         );
 
         if (user) {
-          console.log('User successfully logged in:', user);
-
-          // After login, check the user's role
           const role = await this.authService
             .getUserRole$()
             .pipe(take(1))
             .toPromise();
-          console.log('User role:', role);
 
           if (role) {
-            // Navigate based on the role
             switch (role) {
               case 'admin':
                 await this.router.navigate(['/admin-dashboard']);
@@ -124,29 +119,27 @@ export class AuthenticationPage implements AfterViewInit {
                 await this.router.navigate(['/faculty-dashboard/forum']);
                 break;
               default:
-                console.error('Invalid role');
-                await this.router.navigate(['/authentication']); // Fallback if role is invalid
+                this.errorMessage = 'Invalid role';
+                await this.router.navigate(['/authentication']);
                 break;
             }
           } else {
-            // If no role is found, navigate back to login
-            console.error('No role found');
+            this.errorMessage = 'No role found';
             await this.router.navigate(['/authentication']);
           }
         } else {
-          console.log('Provide correct login credentials');
-          await this.router.navigate(['/authentication']);
+          this.errorMessage = 'Please check your email and password';
         }
       } catch (error) {
-        // Catch any error during login or role check and dismiss loading
+        this.errorMessage = 'Please check your email and password';
         console.error('Error during sign-in:', error);
         await this.router.navigate(['/authentication']);
       } finally {
-        // Ensure loading spinner is dismissed
         loading.dismiss();
       }
     }
   }
+
 
   async googleSignIn() {
     const loading = await this.loadingCtrl.create();

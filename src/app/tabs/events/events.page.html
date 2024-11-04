@@ -1,15 +1,18 @@
-<ion-header class="bg-red-700 shadow-md">
-  <ion-toolbar color="danger">
-    <div class="flex items-center justify-between px-4 py-2">
-      <div class="flex items-center space-x-2">
-        <img src="assets/logo-no-text.png" alt="Logo" class="w-10 h-10" />
-        <h1 class="text-white text-2xl font-semibold">Upcoming Events</h1>
-      </div>
-    </div>
-  </ion-toolbar>
-</ion-header>
+
 
 <ion-content class="ion-padding">
+
+  <div class="background-animation">
+    <ion-icon name="heart" class="icon-animation" style="top: 10%; left: 20%;"></ion-icon>
+    <ion-icon name="star" class="icon-animation" style="top: 30%; left: 70%;"></ion-icon>
+    <ion-icon name="thumbs-up" class="icon-animation" style="top: 50%; left: 40%;"></ion-icon>
+    <ion-icon name="happy" class="icon-animation" style="top: 70%; left: 80%;"></ion-icon>
+  </div>
+
+  <div class="top-image">
+    <img src="assets/top-event.png" alt="SafeTalks Header" />
+  </div>
+  
   <div *ngIf="events.length > 0; else noEvents" class="event-list mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
     <div *ngFor="let event of events" class="bg-white rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-200 p-6">
       <img [src]="event.thumbnailUrl" alt="Event Thumbnail" class="w-full h-48 object-cover rounded-t-lg mb-4" />

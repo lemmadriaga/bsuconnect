@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { ForumPageRoutingModule } from './forum-routing.module';
 
 import { ForumPage } from './forum.page';
+import { CommentModalModule } from 'src/app/components/comment-modal/comment-modal.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ForumPageRoutingModule
+    ForumPageRoutingModule,
+    CommentModalModule
   ],
   declarations: [ForumPage]
 })

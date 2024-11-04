@@ -6,6 +6,8 @@ import { AngularFireStorage } from '@angular/fire/compat/storage'; // Import Fir
 import { finalize } from 'rxjs/operators'; // To handle completion of the upload
 import { Timestamp } from 'firebase/firestore';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { CommentModalComponent } from 'src/app/components/comment-modal/comment-modal.component';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-forum',
@@ -20,6 +22,7 @@ export class ForumPage implements OnInit {
   selectedImageFile: File | null = null; // File reference for the selected image
 
   constructor(
+    private modalController: ModalController,
     private forumService: ForumService,
     private authService: AuthenticationService,
     private alertController: AlertController,
@@ -170,5 +173,12 @@ export class ForumPage implements OnInit {
       return null; // Return null if the timestamp is undefined or invalid
     }
     return new Date(timestamp.seconds * 1000);
+  }
+  async openCommentModal(postId: string) {
+    const modal = await this.modalController.create({
+      component: CommentModalComponent,
+      componentProps: { postId },
+    });
+    await modal.present();
   }
 }

@@ -37,7 +37,7 @@
   
 
   <!-- Active Section -->
-  <ion-list *ngIf="segmentValue === 'active'" class="user-list">
+  <ion-list *ngIf="segmentValue === 'active'" class="user-list active-section">
     <ion-item *ngFor="let user of activeUsers" (click)="startChat(user.id)">
       <ion-avatar slot="start">
         <img [src]="user.avatar" />

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Observable, map } from 'rxjs';
 import { AuthenticationService } from './authentication.service';
+import { AngularFireStorage } from '@angular/fire/compat/storage';
 
 export interface Post {
   id?: string;
@@ -14,7 +15,7 @@ export interface Post {
   approved: boolean;
   likes: string[];
   dislikes: string[];
-  imageUrl?: string; // Add imageUrl property to support images in posts
+  imageUrl?: string;
 }
 
 export interface Comment {
@@ -25,6 +26,7 @@ export interface Comment {
   timestamp: Date;
   authorName: string;
   authorAvatar?: string;
+  parentCommentId?: string | null;
 }
 
 @Injectable({
@@ -33,24 +35,30 @@ export interface Comment {
 export class ForumService {
   constructor(
     private firestore: AngularFirestore,
-    private authService: AuthenticationService
+    private authService: AuthenticationService,
+    private storage: AngularFireStorage // Inject AngularFireStorage
   ) {}
 
   // Updated createPost to accept an optional imageUrl parameter
-  async createPost(content: string, userData: any, imageUrl: string | null = null): Promise<void> {
+  async createPost(
+    content: string,
+    userData: any,
+    imageUrl: string | null = null
+  ): Promise<void> {
+    const profilePictureUrl = await this.getProfilePictureUrl(userData.uid);
     const post: Post = {
       userId: userData.uid,
       content,
       timestamp: new Date(),
       authorName: userData.fullName,
       authorRole: userData.role,
-      authorAvatar: userData.profilePictureUrl || './assets/profile-placeholder.jpg',
+      authorAvatar: profilePictureUrl || './assets/profile-placeholder.jpg',
       approved: userData.role === 'faculty',
       likes: [],
       dislikes: [],
-      ...(imageUrl && { imageUrl }), 
+      ...(imageUrl && { imageUrl }),
     };
-  
+
     try {
       await this.firestore.collection('posts').add(post);
       console.log('Post created successfully');
@@ -59,7 +67,6 @@ export class ForumService {
       throw error;
     }
   }
-  
 
   getPosts(): Observable<Post[]> {
     return this.firestore
@@ -107,17 +114,20 @@ export class ForumService {
   async addComment(
     postId: string,
     content: string,
-    userData: any
+    userData: any,
+    parentCommentId: string | null = null
   ): Promise<void> {
+    const profilePictureUrl = await this.getProfilePictureUrl(userData.uid);
     const comment: Comment = {
       postId,
       userId: userData.uid,
       content,
       timestamp: new Date(),
       authorName: userData.fullName,
-      authorAvatar: userData.profilePictureUrl,
+      authorAvatar: profilePictureUrl,
+      parentCommentId,
     };
-
+  
     try {
       await this.firestore.collection('comments').add(comment);
     } catch (error) {
@@ -126,6 +136,7 @@ export class ForumService {
     }
   }
 
+  // Modify getComments to include replies
   getComments(postId: string): Observable<Comment[]> {
     return this.firestore
       .collection('comments', (ref) =>
@@ -200,4 +211,16 @@ export class ForumService {
       throw error;
     }
   }
+
+  private async getProfilePictureUrl(userId: string): Promise<string | null> {
+    const filePath = `profile_pictures/${userId}`; 
+    const fileRef = this.storage.ref(filePath);
+    try {
+      return await fileRef.getDownloadURL().toPromise();
+    } catch (error) {
+      console.error('Error retrieving profile picture URL:', error);
+      return null;
+    }
+  }
+  
 }

@@ -196,7 +196,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   initializeCalendar() {
     this.calendarOptions = {
       plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
-      initialView: 'dayGridMonth',
+       initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
@@ -206,9 +206,11 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       selectable: true,
       weekends: true,
       height: 'auto', // Let calendar height adjust based on content
-      aspectRatio: 1.5, // Adjust this to control calendar width
-      eventDisplay: 'block', // Ensure events take up space
-      events: [] // Your events data here
+      aspectRatio: 1.2, // Adjust this to control calendar width
+      eventDisplay: 'block',
+      contentHeight: 'auto', // Ensure events take up space
+      events: [], // Your events data here
+      eventClick: this.handleEventClick.bind(this),
     };
     
   }

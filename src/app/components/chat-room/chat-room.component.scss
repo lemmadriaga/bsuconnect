@@ -134,84 +134,39 @@ ion-content {
 ion-footer {
   background: #ffffff;
   border-top: 1px solid #dee2e6;
-  
+
   ion-toolbar {
     --background: transparent;
     --border-width: 0;
     padding: 0 8px;
-    
+
     ion-item {
       --background: transparent;
       --border-width: 0;
       --inner-padding-end: 0;
       --padding-start: 0;
       --min-height: auto;
-      
+
       .input-container {
         display: flex;
         align-items: flex-end;
         width: 100%;
         padding: 8px 0;
         gap: 8px;
-        
-        .textarea-wrapper {
-          flex: 1;
-          background: #f8f9fa;
-          border-radius: 24px;
-          padding: 8px 16px;
-          min-height: 44px;
-          max-height: 150px; // Increased max height
-          overflow: hidden;
-          
-          ion-textarea {
-            --background: transparent;
-            --padding-top: 0;
-            --padding-bottom: 0;
-            --padding-start: 0;
-            --padding-end: 0;
-            margin: 0;
-            min-height: 24px;
-            max-height: 150px;
-            font-size: 14px;
-            line-height: 1.4;
-            
-            &::part(native) {
-              margin: 0;
-              padding: 0;
-              width: 100%;
-              min-height: 24px;
-              max-height: 150px;
-              overflow-y: auto;
-              scrollbar-width: thin;
-              scrollbar-color: #cecece transparent;
-              
-              &::-webkit-scrollbar {
-                width: 6px;
-              }
-              
-              &::-webkit-scrollbar-track {
-                background: transparent;
-              }
-              
-              &::-webkit-scrollbar-thumb {
-                background-color: #cecece;
-                border-radius: 3px;
-              }
-            }
-          }
-        }
-        
+
         ion-button {
           --padding-start: 0;
           --padding-end: 0;
           width: 44px;
           height: 44px;
           margin: 0;
-          
+          background-color: transparent !important; // Set background to transparent
+
           ion-icon {
             font-size: 20px;
+            color: #ff0000 !important; // Set icon color to red
           }
-          
+
           &.button-disabled {
             opacity: 0.5;
           }
@@ -220,6 +175,7 @@ ion-footer {
     }
   }
 }
+
 
 // Add these utility classes
 .text-counter {

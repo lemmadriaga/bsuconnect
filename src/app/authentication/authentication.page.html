@@ -12,12 +12,12 @@
           novalidate
           class="sign-in-form"
         >
-          <ion-img
-            src="./assets/LOGO.png"
-            class="image1"
-          ></ion-img>
+          <ion-img src="./assets/LOGO.png" class="image1"></ion-img>
           <h2 class="title">Sign in</h2>
           <p>Enter your email and password below to Login.</p>
+          <div *ngIf="errorMessage" class="error-message">
+            <ion-text color="danger">{{ errorMessage }}</ion-text>
+          </div>
           <div class="input-field">
             <ion-icon name="mail" class="icon-left"></ion-icon>
             <ion-input
@@ -70,7 +70,12 @@
             </ion-text>
           </div>
 
-          <button type="submit" class="btn solid" (click)="signIn()">
+          <button
+            type="submit"
+            class="btn solid"
+            (click)="signIn()"
+            [disabled]="!loginForm.valid"
+          >
             Login
           </button>
           <!-- <p class="social-text">Or Sign in with your Google account</p>
@@ -85,10 +90,7 @@
           novalidate
           class="sign-up-form"
         >
-          <ion-img
-            src="./assets/LOGO.png"
-            class="image2"
-          ></ion-img>
+          <ion-img src="./assets/LOGO.png" class="image2"></ion-img>
           <h2 class="title">Sign up</h2>
           <div class="input-field">
             <ion-icon name="person" class="icon-left"></ion-icon>
@@ -174,12 +176,27 @@
           </div>
           <div class="input-field">
             <ion-icon name="school" class="icon-left"></ion-icon>
-            <ion-select formControlName="department" placeholder="Select your department">
-              <ion-select-option value="CICS">College of Informatics and Computing Sciences (CICS)</ion-select-option>
-              <ion-select-option value="CET">College of Engineering Technology (CET)</ion-select-option>
-              <ion-select-option value="CTE">College of Teacher Education (CTE)</ion-select-option>
-              <ion-select-option value="CAS">College of Arts and Sciences (CAS)</ion-select-option>
-              <ion-select-option value="CABEIHM">College of Accountancy, Business, Economics and International Hospitality Management (CABEIHM)</ion-select-option>
+            <ion-select
+              formControlName="department"
+              placeholder="Select your department"
+            >
+              <ion-select-option value="CICS"
+                >College of Informatics and Computing Sciences
+                (CICS)</ion-select-option
+              >
+              <ion-select-option value="CET"
+                >College of Engineering Technology (CET)</ion-select-option
+              >
+              <ion-select-option value="CTE"
+                >College of Teacher Education (CTE)</ion-select-option
+              >
+              <ion-select-option value="CAS"
+                >College of Arts and Sciences (CAS)</ion-select-option
+              >
+              <ion-select-option value="CABEIHM"
+                >College of Accountancy, Business, Economics and International
+                Hospitality Management (CABEIHM)</ion-select-option
+              >
             </ion-select>
           </div>
           <div
@@ -206,6 +223,12 @@
       <div class="panel left-panel">
         <div class="content">
           <h3>Let's connect, spartan!</h3>
+          <p>
+            Become part of something bigger. Join us and be a part of the
+            Spartan legacy. <br />
+            Connect, learn, and grow with BatStateU Connect+ !
+          </p>
+
           <button class="btn transparent" id="sign-up-btn">Sign up</button>
         </div>
       </div>

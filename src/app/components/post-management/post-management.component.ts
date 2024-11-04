@@ -66,14 +66,14 @@ export class PostManagementComponent implements OnInit {
   }
 
   private applyFilters() {
-    // Filter based on approval status
+    // Filter posts based on the current filter (e.g., 'all', 'pending', 'approved')
     let filtered =
       this.currentFilter === 'pending'
         ? [...this.pendingPosts]
         : this.currentFilter === 'approved'
         ? [...this.approvedPosts]
         : [...this.allPosts];
-
+  
     // Apply search term
     if (this.searchTerm) {
       const searchLower = this.searchTerm.toLowerCase();
@@ -83,14 +83,16 @@ export class PostManagementComponent implements OnInit {
           post.authorName.toLowerCase().includes(searchLower)
       );
     }
-
+  
     // Apply sorting by timestamp
     filtered.sort((a, b) => {
       const dateA = new Date(a.timestamp).getTime();
       const dateB = new Date(b.timestamp).getTime();
       return this.currentSort === 'newest' ? dateB - dateA : dateA - dateB;
     });
-
+  
+    // Update filteredPosts with the final filtered array
     this.filteredPosts = filtered;
   }
+  
 }
