@@ -23,7 +23,7 @@ export class AuthenticationPage implements AfterViewInit {
   ) {}
 
   ngOnInit() {
-    // Initialize forms here
+    
     this.initializeForms();
   }
 
@@ -72,7 +72,7 @@ export class AuthenticationPage implements AfterViewInit {
         .registerUser(email, password, fullName, contact, department)
         .catch((error) => {
           console.log(error);
-          loading.dismiss(); // Dismiss loading on error
+          loading.dismiss(); 
         });
 
       if (user) {
@@ -80,10 +80,10 @@ export class AuthenticationPage implements AfterViewInit {
         this.router.navigate(['student-dashboard/forum']);
       } else {
         console.log('Provide correct values ');
-        loading.dismiss(); // Ensure loading is dismissed if user is not returned
+        loading.dismiss(); 
       }
     } else {
-      loading.dismiss(); // Dismiss loading if form is invalid
+      loading.dismiss(); 
     }
   }
 
@@ -150,14 +150,14 @@ export class AuthenticationPage implements AfterViewInit {
       if (user) {
         console.log('User successfully logged in with Google:', user);
 
-        // Check the user's role after successful Google login
+        
         const role = await this.authService
           .getUserRole$()
           .pipe(take(1))
           .toPromise();
         console.log('User role:', role);
 
-        // Navigate based on the role
+        
         switch (role) {
           case 'admin':
             await this.router.navigate(['/admin-dashboard']);
@@ -173,7 +173,7 @@ export class AuthenticationPage implements AfterViewInit {
             break;
           default:
             console.error('Invalid role');
-            await this.router.navigate(['/authentication']); // Fallback if role is invalid
+            await this.router.navigate(['/authentication']); 
             break;
         }
       }

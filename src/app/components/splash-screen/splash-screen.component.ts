@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-components',
-  templateUrl: './components.component.html',
-  styleUrls: ['./components.component.scss'],
+  selector: 'app-splash-screen',
+  templateUrl: './splash-screen.component.html',
+  styleUrls: ['./splash-screen.component.scss'],
 })
-export class ComponentsComponent implements OnInit {
+export class SplashScreenComponent implements OnInit {
   showSplash = true;
   constructor() {}
 

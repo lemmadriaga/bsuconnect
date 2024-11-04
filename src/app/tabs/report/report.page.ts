@@ -13,7 +13,7 @@ export class ReportPage {
     description: '',
   };
   selectedFile: File | null = null;
-  imagePreview: string | ArrayBuffer | null = null; // For storing the image preview URL
+  imagePreview: string | ArrayBuffer | null = null;
 
   constructor(private reportService: ReportService, private router: Router) {}
 
@@ -31,7 +31,6 @@ export class ReportPage {
     if (input.files && input.files.length > 0) {
       this.selectedFile = input.files[0];
 
-      // Generate a preview of the image
       const reader = new FileReader();
       reader.onload = (e) => {
         this.imagePreview = e.target?.result;

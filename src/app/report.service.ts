@@ -17,14 +17,14 @@ export class ReportService {
   async createReport(report: { title: string; description: string }, file: File) {
     const currentUser = await this.authService.getCurrentUserId();
 
-    // Fetch user details
+    
     const userDoc = await this.firestore.collection('users').doc(currentUser).get().toPromise();
     const userData = userDoc.data();
 
     const reportData = {
       ...report,
       userId: currentUser,
-      userName: userData ? userData['fullName'] : 'Anonymous', // Include user's name or fallback to 'Anonymous'
+      userName: userData ? userData['fullName'] : 'Anonymous', 
       createdAt: new Date(),
       solved: false,
     };

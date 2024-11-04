@@ -25,24 +25,21 @@ export class EventDetailsPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Get the event ID from the route
     const eventId = this.route.snapshot.paramMap.get('id');
     if (eventId) {
-      // Fetch user information
       this.authService.getUserId().subscribe((id) => {
         this.userId = id;
-        console.log("User ID:", this.userId);
+        console.log('User ID:', this.userId);
       });
       this.authService.getUserName().subscribe((name) => {
         this.userName = name;
-        console.log("User Name:", this.userName);
+        console.log('User Name:', this.userName);
       });
       this.authService.getUserDepartment().subscribe((department) => {
         this.userDepartment = department;
-        console.log("User Department:", this.userDepartment);
+        console.log('User Department:', this.userDepartment);
       });
 
-      // Fetch the event details by ID
       this.firestore
         .collection('events')
         .doc(eventId)
@@ -59,7 +56,6 @@ export class EventDetailsPage implements OnInit {
   }
 
   checkIfRegistered(eventId: string) {
-    // Check if the user is already registered for the event
     if (this.userId) {
       this.firestore
         .collection('events')
@@ -71,15 +67,18 @@ export class EventDetailsPage implements OnInit {
           this.isRegistered = doc.exists;
           if (this.isRegistered) {
             this.isAttended = doc.data()?.['status'] === 'Attended';
-
-
           }
         });
     }
   }
 
   registerToEvent() {
-    if (!this.isRegistered && this.userId && this.userName && this.userDepartment) {
+    if (
+      !this.isRegistered &&
+      this.userId &&
+      this.userName &&
+      this.userDepartment
+    ) {
       const attendeeData = {
         name: this.userName,
         department: this.userDepartment,
@@ -94,15 +93,14 @@ export class EventDetailsPage implements OnInit {
         .set(attendeeData)
         .then(() => {
           this.isRegistered = true;
-          console.log("Attendee registered successfully.");
+          console.log('Attendee registered successfully.');
         })
-        .catch(error => console.error("Error registering attendee:", error));
+        .catch((error) => console.error('Error registering attendee:', error));
     } else {
-      console.error("User data missing or already registered.");
+      console.error('User data missing or already registered.');
     }
   }
 
-  // Check if the current date matches the event date
   isEventToday(): boolean {
     const today = new Date();
     const eventDate = new Date(this.event.date);
@@ -113,25 +111,12 @@ export class EventDetailsPage implements OnInit {
     );
   }
 
-  // // Mark attendance for the event
-  // markAttendance() {
-  //   if (this.userId && this.event?.id) {
-  //     this.firestore
-  //       .collection('events')
-  //       .doc(this.event.id)
-  //       .collection('attendees')
-  //       .doc(this.userId)
-  //       .update({ status: 'present' })
-  //       .then(() => {
-  //         this.isAttended = true;
-  //         console.log("Attendance marked as attended.");
-  //       })
-  //       .catch(error => console.error("Error marking attendance:", error));
-  //   }
-  // }
-
   async checkLocationAndMarkAttendance() {
-    if (navigator.geolocation && this.event?.latitude && this.event?.longitude) {
+    if (
+      navigator.geolocation &&
+      this.event?.latitude &&
+      this.event?.longitude
+    ) {
       try {
         const position = await Geolocation.getCurrentPosition();
         const distance = this.calculateDistance(
@@ -141,18 +126,19 @@ export class EventDetailsPage implements OnInit {
           this.event.longitude
         );
 
-        // Assuming a 100-meter tolerance for location accuracy
         if (distance <= 0.1) {
           this.markAttendance();
         } else {
-          alert("You need to be at the event location to mark attendance.");
+          alert('You need to be at the event location to mark attendance.');
         }
       } catch (error) {
-        console.error("Error getting location:", error);
-        alert("Could not get location. Please ensure location services are enabled.");
+        console.error('Error getting location:', error);
+        alert(
+          'Could not get location. Please ensure location services are enabled.'
+        );
       }
     } else {
-      alert("Event location not set or location services not available.");
+      alert('Event location not set or location services not available.');
     }
   }
 
@@ -166,23 +152,29 @@ export class EventDetailsPage implements OnInit {
         .update({ status: 'present' })
         .then(() => {
           this.isAttended = true;
-          console.log("Attendance marked as attended.");
+          console.log('Attendance marked as attended.');
         })
-        .catch(error => console.error("Error marking attendance:", error));
+        .catch((error) => console.error('Error marking attendance:', error));
     }
   }
 
-  // Calculate distance between two points in kilometers
-  calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number {
     const toRad = (value: number) => (value * Math.PI) / 180;
-    const R = 6371; // Radius of the Earth in km
+    const R = 6371;
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
-
 }

@@ -6,24 +6,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh; /* Full viewport height */
-  background: rgba(0, 0, 0, 0.5); /* Adds overlay background */
-  padding: 0; /* Remove any extra padding */
-}
+  height: 100vh;   background: rgba(0, 0, 0, 0.5);   padding: 0; }
 
 .feedback-modal-container {
-  position: relative; /* Allow absolute positioning of the close button */
-  background-color: white;
+  position: relative;   background-color: white;
   padding: 20px;
   border-radius: 15px;
   max-width: 90%;
-  width: 400px; /* Set fixed width */
-  max-height: 80vh; /* Prevents taking up the full height */
-  margin: auto;
+  width: 400px;   max-height: 80vh;   margin: auto;
   margin-top: 50%;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
-  overflow-y: auto; /* Enable scrolling if content overflows */
-}
+  overflow-y: auto; }
 
 .close-button {
   position: absolute;
@@ -51,8 +44,7 @@
 
 .star-icon:hover,
 .star-icon.active {
-  color: #fbbf24; /* Yellow color */
-}
+  color: #fbbf24; }
 
 .submit-button {
   background-color: #990008;

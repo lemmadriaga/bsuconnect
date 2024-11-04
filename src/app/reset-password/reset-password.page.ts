@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AuthenticationService } from '../authentication.service'; // Your auth service
+import { AuthenticationService } from '../authentication.service';
 import { ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 
@@ -14,7 +14,7 @@ export class ResetPasswordPage {
 
   constructor(
     private formBuilder: FormBuilder,
-    private authService: AuthenticationService, // Inject your auth service
+    private authService: AuthenticationService,
     private toastController: ToastController,
     private router: Router
   ) {}

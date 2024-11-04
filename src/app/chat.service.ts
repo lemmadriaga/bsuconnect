@@ -13,7 +13,6 @@ interface UserStatus {
   isOnline: boolean;
 }
 
-
 interface Message {
   id: string;
   text: string;
@@ -38,7 +37,6 @@ interface Chat {
   unreadCount?: number;
 }
 
-
 interface User {
   uid: string;
   fullName: string;
@@ -55,13 +53,15 @@ export class ChatService {
     private authService: AuthenticationService
   ) {}
 
-  private lastMessagesSubject = new BehaviorSubject<{ [chatId: string]: string }>({});
-  
+  private lastMessagesSubject = new BehaviorSubject<{
+    [chatId: string]: string;
+  }>({});
+
   updateLastMessage(chatId: string, message: string) {
     const currentMessages = this.lastMessagesSubject.value;
     this.lastMessagesSubject.next({
       ...currentMessages,
-      [chatId]: message
+      [chatId]: message,
     });
   }
 
@@ -119,13 +119,15 @@ export class ChatService {
           senderId: userId,
           timestamp: serverTimestamp(),
         };
-  
-        // Add the message and update lastMessage in the chat document
+
         return from(
           this.firestore.collection(`chats/${chatId}/messages`).add(message)
         ).pipe(
           switchMap(() =>
-            this.firestore.collection('chats').doc(chatId).update({ lastMessage: message })
+            this.firestore
+              .collection('chats')
+              .doc(chatId)
+              .update({ lastMessage: message })
           )
         );
       }),
@@ -135,8 +137,6 @@ export class ChatService {
       })
     );
   }
-  
-  
 
   getOtherUser(chatId: string): Observable<any> {
     return combineLatest([
@@ -151,14 +151,19 @@ export class ChatService {
 
         if (!otherUserId) return of({ fullName: 'User', isOnline: false });
 
-        const userDoc$ = this.firestore.doc<User>(`users/${otherUserId}`).valueChanges();
-        const statusDoc$ = this.firestore.doc<UserStatus>(`userStatus/${otherUserId}`).valueChanges();
+        const userDoc$ = this.firestore
+          .doc<User>(`users/${otherUserId}`)
+          .valueChanges();
+        const statusDoc$ = this.firestore
+          .doc<UserStatus>(`userStatus/${otherUserId}`)
+          .valueChanges();
 
         return combineLatest([userDoc$, statusDoc$]).pipe(
           map(([user, status]) => ({
             uid: otherUserId,
             fullName: user?.fullName || 'User',
-            profilePictureUrl: user?.profilePictureUrl || './assets/profile-placeholder.jpg', // Updated field name
+            profilePictureUrl:
+              user?.profilePictureUrl || './assets/profile-placeholder.jpg',
             isOnline: status?.isOnline || false,
           }))
         );
@@ -170,92 +175,90 @@ export class ChatService {
     );
   }
 
-getRecentChats(): Observable<Chat[]> {
-  return this.authService.getUserData$().pipe(
-    switchMap((profile) => {
-      const userId = profile?.uid;
-      if (!userId) {
-        console.error('User ID not found');
-        throw new Error('User ID not found');
-      }
+  getRecentChats(): Observable<Chat[]> {
+    return this.authService.getUserData$().pipe(
+      switchMap((profile) => {
+        const userId = profile?.uid;
+        if (!userId) {
+          console.error('User ID not found');
+          throw new Error('User ID not found');
+        }
 
-      const query = (ref) => ref.where('participants', 'array-contains', userId);
+        const query = (ref) =>
+          ref.where('participants', 'array-contains', userId);
 
-      return this.firestore
-        .collection<Chat>('chats', query)
-        .valueChanges({ idField: 'id' })
-        .pipe(
-          switchMap((chats) => {
-            const userObservables = chats.map((chat) => {
-              const otherUserId = chat.participants.find(id => id !== userId);
-              
-              if (otherUserId) {
-                console.log('Fetching user document:', `users/${otherUserId}`);
-                
-                return this.firestore.doc<User>(`users/${otherUserId}`).valueChanges().pipe(
-                  map((otherUser) => {
-                    console.log('Fetched user data:', otherUser); // Debug log
-                    return {
-                      ...chat,
-                      otherParticipant: {
-                        uid: otherUserId,
-                        fullName: otherUser?.fullName || 'Unknown User',
-                        profilePictureUrl: otherUser?.profilePictureUrl && otherUser.profilePictureUrl.trim() !== '' 
-                          ? otherUser.profilePictureUrl 
-                          : './assets/profile-placeholder.jpg',
-                      },
-                      lastMessage: chat.lastMessage || { content: 'No messages yet' },
-                    };
-                  })
+        return this.firestore
+          .collection<Chat>('chats', query)
+          .valueChanges({ idField: 'id' })
+          .pipe(
+            switchMap((chats) => {
+              const userObservables = chats.map((chat) => {
+                const otherUserId = chat.participants.find(
+                  (id) => id !== userId
                 );
-              }
 
-              return of({
-                ...chat,
-                otherParticipant: {
-                  uid: '',
-                  fullName: 'Unknown User',
-                  profilePictureUrl: './assets/profile-placeholder.jpg'
-                },
-                lastMessage: chat.lastMessage || { content: 'No messages yet' },
+                if (otherUserId) {
+                  console.log(
+                    'Fetching user document:',
+                    `users/${otherUserId}`
+                  );
+
+                  return this.firestore
+                    .doc<User>(`users/${otherUserId}`)
+                    .valueChanges()
+                    .pipe(
+                      map((otherUser) => {
+                        console.log('Fetched user data:', otherUser);
+                        return {
+                          ...chat,
+                          otherParticipant: {
+                            uid: otherUserId,
+                            fullName: otherUser?.fullName || 'Unknown User',
+                            profilePictureUrl:
+                              otherUser?.profilePictureUrl &&
+                              otherUser.profilePictureUrl.trim() !== ''
+                                ? otherUser.profilePictureUrl
+                                : './assets/profile-placeholder.jpg',
+                          },
+                          lastMessage: chat.lastMessage || {
+                            content: 'No messages yet',
+                          },
+                        };
+                      })
+                    );
+                }
+
+                return of({
+                  ...chat,
+                  otherParticipant: {
+                    uid: '',
+                    fullName: 'Unknown User',
+                    profilePictureUrl: './assets/profile-placeholder.jpg',
+                  },
+                  lastMessage: chat.lastMessage || {
+                    content: 'No messages yet',
+                  },
+                });
               });
-            });
 
-            return combineLatest(userObservables);
-          }),
-          map(chats => {
-            console.log('Final processed chats:', chats); // Debug log
-            return chats;
-          }),
-          catchError((error) => {
-            console.error('Error fetching recent chats:', error);
-            return of([]);
-          })
-        );
-    })
-  );
-}
-
-
-
-
-  
-  
-
-
-
-  
-  
-  
-  
-  
-  
-  
+              return combineLatest(userObservables);
+            }),
+            map((chats) => {
+              console.log('Final processed chats:', chats);
+              return chats;
+            }),
+            catchError((error) => {
+              console.error('Error fetching recent chats:', error);
+              return of([]);
+            })
+          );
+      })
+    );
+  }
 
   getActiveUsers(): Observable<any[]> {
-    const activeUsersQuery = this.firestore.collection(
-      'userStatus',
-      (ref) => ref.where('isOnline', '==', true)
+    const activeUsersQuery = this.firestore.collection('userStatus', (ref) =>
+      ref.where('isOnline', '==', true)
     );
 
     return combineLatest([
@@ -270,121 +273,38 @@ getRecentChats(): Observable<Chat[]> {
     );
   }
 
-  // async createOrGetChat(userId: string): Promise<string | null> {
-  //   console.log('Creating or getting chat with userId:', userId);
-  
-  //   try {
-  //     const currentUser = await this.authService.getUserData$().toPromise();
-  //     console.log('Current user data:', currentUser); // Log the retrieved user data
-  
-  //     if (!currentUser) {
-  //       console.error('Failed to retrieve current user');
-  //       return null;
-  //     }
-  
-  //     const participants = [currentUser.uid, userId].sort();
-  //     console.log('Participants:', participants);
-  
-  //     const chatQuery = this.firestore.collection('chats', (ref) =>
-  //       ref.where('participants', '==', participants)
-  //     );
-  
-  //     console.log('Executing Firestore query for chat'); // Log before executing query
-  
-  //     const chatDoc = await chatQuery.get().toPromise();
-  //     console.log('Firestore query result:', chatDoc); // Log after query execution
-  
-  //     if (!chatDoc.empty) {
-  //       console.log('Existing chat found:', chatDoc.docs[0].id);
-  //       return chatDoc.docs[0].id;
-  //     } else {
-  //       console.log('No existing chat, creating a new one');
-  //       const newChat = await this.firestore.collection('chats').add({
-  //         participants: participants,
-  //         createdAt: firebase.firestore.Timestamp.now(),
-  //       });
-  //       console.log('New chat created with ID:', newChat.id);
-  //       return newChat.id;
-  //     }
-  //   } catch (error) {
-  //     console.error('Error executing Firestore query or creating chat:', error);
-  //     return null;
-  //   }
-  // }
-  
-  // async createOrGetChat(userId: string): Promise<string | null> {
-  //   console.log('Creating or getting chat with userId:', userId);
-  
-  //   try {
-  //     const currentUser = { uid: 'mockUserId' }; // Replace with actual user data
-  //     const participants = [currentUser.uid, userId].sort();
-  //     console.log('Participants:', participants);
-  
-  //     const chatQuery = this.firestore.collection('chats', (ref) =>
-  //       ref.where('participants', '==', participants)
-  //     );
-  
-  //     const chatDoc = await chatQuery.get().toPromise();
-  //     if (!chatDoc.empty) {
-  //       console.log('Existing chat found with ID:', chatDoc.docs[0].id);
-  //       return chatDoc.docs[0].id;
-  //     } else {
-  //       console.log('No existing chat, creating a new one');
-  
-  //       // Step 1: Create the document without the createdAt field
-  //       const newChat = await this.firestore.collection('chats').add({
-  //         participants: participants
-  //       });
-  
-  //       // Step 2: Update the document to set createdAt with serverTimestamp
-  //       await this.firestore.collection('chats').doc(newChat.id).update({
-  //         createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  //       });
-  
-  //       console.log('New chat created with ID:', newChat.id);
-  //       return newChat.id;
-  //     }
-  //   } catch (error) {
-  //     console.error('Error executing Firestore query or creating chat:', error);
-  //     return null;
-  //   }
-  // }
-
   async createOrGetChat(userId: string): Promise<string | null> {
     console.log('Creating or getting chat with userId:', userId);
-  
+
     try {
-      // Fetch the actual current user's ID from the authentication service
       const currentUserId = await this.authService.getCurrentUserId();
       if (!currentUserId) {
         console.error('User is not authenticated');
         return null;
       }
-  
+
       const participants = [currentUserId, userId].sort();
       console.log('Participants:', participants);
-  
+
       const chatQuery = this.firestore.collection('chats', (ref) =>
         ref.where('participants', '==', participants)
       );
-  
+
       const chatDoc = await chatQuery.get().toPromise();
       if (!chatDoc.empty) {
         console.log('Existing chat found with ID:', chatDoc.docs[0].id);
         return chatDoc.docs[0].id;
       } else {
         console.log('No existing chat, creating a new one');
-  
-        // Step 1: Create the document without the createdAt field
+
         const newChat = await this.firestore.collection('chats').add({
-          participants: participants
+          participants: participants,
         });
-  
-        // Step 2: Update the document to set createdAt with serverTimestamp
+
         await this.firestore.collection('chats').doc(newChat.id).update({
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
-  
+
         console.log('New chat created with ID:', newChat.id);
         return newChat.id;
       }
@@ -393,9 +313,7 @@ getRecentChats(): Observable<Chat[]> {
       return null;
     }
   }
-  
-  
-  
+
   async testCreateChatDocument() {
     try {
       const testChat = await this.firestore.collection('chats').add({
@@ -407,16 +325,6 @@ getRecentChats(): Observable<Chat[]> {
       console.error('Error creating test chat document:', error);
     }
   }
-  
-  
-  
-  
-
-  
-  
-  
-  
-  
 
   getUserNameById(id: string): Observable<string> {
     return this.firestore
@@ -428,12 +336,10 @@ getRecentChats(): Observable<Chat[]> {
       );
   }
 
-  // Implement updateUserStatus in ChatService as it’s referenced in chat.page.ts
   updateUserStatus(userId: string, isOnline: boolean) {
     return this.firestore
       .collection('userStatus')
       .doc(userId)
       .set({ isOnline }, { merge: true });
   }
-  
 }

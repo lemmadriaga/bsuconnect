@@ -29,30 +29,30 @@ ion-footer {
   }
 
   .reply-list {
-    margin-left: 16px; // Reduced indentation
-    padding-left: 24px; // Add some padding to offset from the left
+    margin-left: 16px; 
+    padding-left: 24px; 
     border-left: 1px solid var(--ion-color-light);
   }
 
   .reply-item {
     --padding-start: 0;
     --inner-padding-end: 8px;
-    font-size: 0.95em; // Slightly smaller font for replies
+    font-size: 0.95em; 
   }
 
   .reply-input {
-    margin-left: 16px; // Same as reply-list margin-left
-    padding-left: 24px; // Same as reply-list padding-left
+    margin-left: 16px; 
+    padding-left: 24px; 
     --padding-start: 0;
   }
 
   ion-avatar {
-    width: 36px; // Slightly larger than replies
+    width: 36px; 
     height: 36px;
   }
 
   .reply-item ion-avatar {
-    width: 32px; // Smaller avatar size for replies
+    width: 32px; 
     height: 32px;
   }
 

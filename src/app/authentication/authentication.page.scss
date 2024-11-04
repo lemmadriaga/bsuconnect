@@ -88,8 +88,7 @@ form.sign-in-form {
 }
 
 .input-field {
-  position: relative; /* Make the input field container relative */
-  max-width: 380px;
+  position: relative;   max-width: 380px;
   width: 100%;
   background-color: #f0f0f0;
   margin: 10px 0;
@@ -145,15 +144,11 @@ form.sign-in-form {
 }
 
 .forgot-password {
-  position: absolute; /* Position it absolutely within the input field container */
-  bottom: -30px; /* Adjust based on your design */
-  right: 10px; /* Adjust based on your design */
-  font-size: 0.9rem;
+  position: absolute;   bottom: -30px;   right: 10px;   font-size: 0.9rem;
 }
 
 .forgot-password a {
-  color: #F21622; /* Adjust color as needed */
-  text-decoration: none;
+  color: #F21622;   text-decoration: none;
 }
 
 .forgot-password a:hover {
@@ -280,8 +275,7 @@ form.sign-in-form {
   justify-content: center; 
   text-align: center;
   z-index: 6;
-  height: 100%; /* Full height to fill the panel */
-  padding: 3rem;
+  height: 100%;   padding: 3rem;
 }
 
 .left-panel .content, 
@@ -342,7 +336,6 @@ form.sign-in-form {
   transform: translateX(800px);
 }
 
-/* ANIMATION */
 
 .container.sign-up-mode:before {
   transform: translate(100%, -50%);
@@ -487,34 +480,23 @@ form.sign-in-form {
 }
 @media (max-width: 600px) {
   .panel .content p {
-    font-size: 0.9rem; /* Slightly reduce font size */
-    line-height: 1.4; /* Adjust line height for smaller screens */
-    max-width: 90%; /* Make text width more flexible */
-    padding: 0 10px; /* Add padding for spacing on smaller screens */
-    text-align: center; /* Center-align text for readability */
-    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;     line-height: 1.4;     max-width: 90%;     padding: 0 10px;     text-align: center;     font-family: 'Poppins', sans-serif;
     margin-top: 5%;
   }
 
   .panel .content h3 {
     font-size: 1.2rem;
-    margin-top: 3%; /* Reduce title size on small screens */
-  }
+    margin-top: 3%;   }
 
   .btn.transparent {
-    width: 140px; /* Adjust button width for smaller screens */
-    height: 40px;
-    font-size: 0.8rem; /* Slightly smaller font size for the button */
-  }
+    width: 140px;     height: 40px;
+    font-size: 0.8rem;   }
 
-  /* Adjust padding for panel */
-  .left-panel, .right-panel {
-    padding: 2rem 5%; /* Add responsive padding */
-  }
+    .left-panel, .right-panel {
+    padding: 2rem 5%;   }
   
   .panel .content {
-    padding: 0 1rem; /* Add padding around content for small screens */
-  }
+    padding: 0 1rem;   }
 }
 
 

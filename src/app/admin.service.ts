@@ -1,4 +1,3 @@
-// admin.service.ts
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Observable } from 'rxjs';
@@ -23,8 +22,6 @@ export class AdminService {
       .valueChanges()
       .pipe(
         map((users) => {
-          // Process users to get monthly counts
-          // Implementation depends on your data structure
           return this.processUsersByMonth(users);
         })
       );
@@ -36,22 +33,16 @@ export class AdminService {
       .valueChanges()
       .pipe(
         map((users) => {
-          // Process users to get department distribution
-          // Implementation depends on your data structure
           return this.processUsersByDepartment(users);
         })
       );
   }
 
   private processUsersByMonth(users: any[]): any[] {
-    // Implementation to process users into monthly data
-    // This will depend on your specific data structure
     return [];
   }
 
   private processUsersByDepartment(users: any[]): any[] {
-    // Implementation to process users into department data
-    // This will depend on your specific data structure
     return [];
   }
 

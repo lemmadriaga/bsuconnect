@@ -19,7 +19,7 @@ ion-content {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url("../../../assets/logo-no-text.png"); // Update path as necessary
+  background-image: url("../../../assets/logo-no-text.png"); 
   background-size: cover;
   background-position: center;
   opacity: 0.1;
@@ -28,7 +28,7 @@ ion-content {
 
 .report-container {
   position: relative;
-  max-width: 28rem; /* Limit max width */
+  max-width: 28rem; 
   margin: auto;
   background-color: white;
   padding: 2rem;

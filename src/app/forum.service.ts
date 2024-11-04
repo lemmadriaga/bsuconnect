@@ -36,10 +36,9 @@ export class ForumService {
   constructor(
     private firestore: AngularFirestore,
     private authService: AuthenticationService,
-    private storage: AngularFireStorage // Inject AngularFireStorage
+    private storage: AngularFireStorage
   ) {}
 
-  // Updated createPost to accept an optional imageUrl parameter
   async createPost(
     content: string,
     userData: any,
@@ -127,7 +126,7 @@ export class ForumService {
       authorAvatar: profilePictureUrl,
       parentCommentId,
     };
-  
+
     try {
       await this.firestore.collection('comments').add(comment);
     } catch (error) {
@@ -136,7 +135,6 @@ export class ForumService {
     }
   }
 
-  // Modify getComments to include replies
   getComments(postId: string): Observable<Comment[]> {
     return this.firestore
       .collection('comments', (ref) =>
@@ -213,7 +211,7 @@ export class ForumService {
   }
 
   private async getProfilePictureUrl(userId: string): Promise<string | null> {
-    const filePath = `profile_pictures/${userId}`; 
+    const filePath = `profile_pictures/${userId}`;
     const fileRef = this.storage.ref(filePath);
     try {
       return await fileRef.getDownloadURL().toPromise();
@@ -222,5 +220,4 @@ export class ForumService {
       return null;
     }
   }
-  
 }

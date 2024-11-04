@@ -13,23 +13,23 @@ export class FeedbackService {
     private authService: AuthenticationService
   ) {}
 
-  // Save feedback with user's name
+  
   saveFeedback(comment: string, rating: number) {
     return this.authService.getUserData$().pipe(
       switchMap((user) => {
         const feedbackData = {
-          name: user?.fullName || 'Anonymous', // Get user's name or default to "Anonymous"
+          name: user?.fullName || 'Anonymous', 
           comment,
           rating,
           createdAt: new Date(),
         };
         return this.firestore.collection('feedback').add(feedbackData).then(() => {
-          console.log('Feedback successfully saved'); // Log success
+          console.log('Feedback successfully saved'); 
         });
       })
     ).toPromise().catch((error) => {
-      console.error('Error saving feedback:', error); // Log error
-      throw error; // Re-throw the error to be handled in submitFeedback
+      console.error('Error saving feedback:', error); 
+      throw error; 
     });
   }
 

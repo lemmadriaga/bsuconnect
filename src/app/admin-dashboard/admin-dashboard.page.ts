@@ -18,10 +18,6 @@ import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import { HostListener } from '@angular/core';
 
-
-
-
-
 interface TabItem {
   label: string;
   icon: string;
@@ -36,17 +32,17 @@ interface TabItem {
 export class AdminDashboardPage implements OnInit, AfterViewInit {
   isSidebarVisible = true;
   isLargeScreen = window.innerWidth >= 1024;
-  showEventDetailsModall= false;
+  showEventDetailsModall = false;
   showEventDetailsModal = false;
   map: L.Map | null = null;
   marker: L.Marker | null = null;
   mapReady: boolean = false;
-  feedbackList: any[] = []; // Full feedback list
-  paginatedFeedbackList: any[] = []; // Feedback for current page
+  feedbackList: any[] = [];
+  paginatedFeedbackList: any[] = [];
   ratingsChart: any;
   currentPage: number = 1;
   itemsPerPage: number = 9;
-  totalPages: number[] = []; // Array to store page numbers
+  totalPages: number[] = [];
   reports: any[] = [];
   paginatedReportList: any[] = [];
   departmentChart: any;
@@ -59,18 +55,15 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     invited: [],
     description: '',
     thumbnailUrl: '',
-    latitude: 14.073856, // Default latitude
+    latitude: 14.073856,
     longitude: 121.2612608,
-  
   };
-  events: any[] = []; // List of events
+  events: any[] = [];
   selectedEventId: string | null = null;
   attendeeList: any[] = [];
   attendeesDepartmentChart: any;
   calendarOptions: any;
   selectedEvent: any;
- 
-
 
   tabs: TabItem[] = [
     { label: 'Dashboard', icon: 'grid', active: true },
@@ -90,7 +83,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     private router: Router,
     private feedbackService: FeedbackService,
     private reportService: ReportService,
-    private firestore: AngularFirestore, 
+    private firestore: AngularFirestore,
     private storage: AngularFireStorage
   ) {
     this.pendingPosts$ = this.forumService.getPostsForApproval();
@@ -105,50 +98,38 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
       tooltipAnchor: [16, -28],
-      shadowSize: [41, 41]
+      shadowSize: [41, 41],
     });
     L.Marker.prototype.options.icon = iconDefault;
-  
   }
 
-  // openEventForm() {
-  //   this.showEventForm = true;
-  // }
-  // closeEventForm() {
-  //   this.showEventForm = false;
-  // }
   eventDetails(eventId: string) {
     if (eventId) {
-        this.selectedEventId = eventId;
-        this.showEventDetailsModal = true;
-        this.loadAttendeeDetails();
+      this.selectedEventId = eventId;
+      this.showEventDetailsModal = true;
+      this.loadAttendeeDetails();
     } else {
-        console.error("Invalid eventId passed to eventDetails:", eventId);
+      console.error('Invalid eventId passed to eventDetails:', eventId);
     }
-}
+  }
 
-
-
-  
-
-  // Close the event details modal
   closeEventDetailsModal() {
     this.showEventDetailsModal = false;
     if (this.attendeesDepartmentChart) {
-      this.attendeesDepartmentChart.destroy(); // Destroy the chart instance
+      this.attendeesDepartmentChart.destroy();
     }
   }
   closeEventDetailsModall() {
     this.showEventDetailsModall = false;
     if (this.attendeesDepartmentChart) {
-      this.attendeesDepartmentChart.destroy(); // Destroy the chart instance
+      this.attendeesDepartmentChart.destroy();
     }
   }
 
   ngOnInit() {
-      this.loadEvents();
-      this.initializeCalendar();
-    // Check if user is admin
+    this.loadEvents();
+    this.initializeCalendar();
+
     this.authService.getUserRole$().subscribe((role) => {
       if (role !== 'admin') {
         this.router.navigate(['/home']);
@@ -158,12 +139,10 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       this.createDepartmentChart(departmentCounts);
     });
 
-    // Get total user count
     this.authService.getTotalUserCount().subscribe((count) => {
       this.totalUsers = count;
     });
 
-    // Fetch feedback data
     this.feedbackService.getFeedbackRatings().subscribe((feedbacks: any[]) => {
       this.feedbackList = feedbacks;
       this.calculateTotalPages();
@@ -176,16 +155,17 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
 
     this.fetchReports();
 
-    this.firestore.collection('events').snapshotChanges().subscribe((events: any[]) => {
-      this.events = events.map(e => {
+    this.firestore
+      .collection('events')
+      .snapshotChanges()
+      .subscribe((events: any[]) => {
+        this.events = events.map((e) => {
           return {
-              id: e.payload.doc.id,  // Include the document ID here
-              ...e.payload.doc.data()
+            id: e.payload.doc.id,
+            ...e.payload.doc.data(),
           };
+        });
       });
-  });
-
-    
   }
 
   ngAfterViewInit() {
@@ -196,67 +176,65 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   initializeCalendar() {
     this.calendarOptions = {
       plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
-       initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
+      initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
       },
       editable: true,
       selectable: true,
       weekends: true,
-      height: 'auto', // Let calendar height adjust based on content
-      aspectRatio: 1.2, // Adjust this to control calendar width
+      height: 'auto',
+      aspectRatio: 1.2,
       eventDisplay: 'block',
-      contentHeight: 'auto', // Ensure events take up space
-      events: [], // Your events data here
+      contentHeight: 'auto',
+      events: [],
       eventClick: this.handleEventClick.bind(this),
     };
-    
   }
-  
-
 
   handleDateSelect(arg: any) {
-    // Handle date selection
     console.log('Date selected:', arg);
   }
   loadEvents() {
-    // Fetch events from Firestore
-    this.firestore.collection('events').snapshotChanges().subscribe(events => {
-      const calendarEvents = events.map(e => {
-        const data: any = e.payload.doc.data();
-        return {
-          id: e.payload.doc.id,
-          title: data.title,
-          start: data.date,
-          extendedProps: {
-            time: data.time,
-            location: data.location,
-            description: data.description,
-          }
-        };
+    this.firestore
+      .collection('events')
+      .snapshotChanges()
+      .subscribe((events) => {
+        const calendarEvents = events.map((e) => {
+          const data: any = e.payload.doc.data();
+          return {
+            id: e.payload.doc.id,
+            title: data.title,
+            start: data.date,
+            extendedProps: {
+              time: data.time,
+              location: data.location,
+              description: data.description,
+            },
+          };
+        });
+
+        const philippineHolidays = [
+          { title: "New Year's Day", date: '2024-01-01' },
+          { title: 'Independence Day', date: '2024-06-12' },
+          { title: 'Bonifacio Day', date: '2024-11-30' },
+        ];
+
+        this.calendarOptions.events = [
+          ...calendarEvents,
+          ...philippineHolidays,
+        ];
       });
-
-      // Add Philippine holidays
-      const philippineHolidays = [
-        { title: 'New Year\'s Day', date: '2024-01-01' },
-        { title: 'Independence Day', date: '2024-06-12' },
-        { title: 'Bonifacio Day', date: '2024-11-30' },
-        // Add more holidays as needed
-      ];
-
-      this.calendarOptions.events = [...calendarEvents, ...philippineHolidays];
-    });
   }
   convertToDate(timestamp: any): Date {
     if (timestamp && timestamp.seconds) {
-        return new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
+      return new Date(timestamp.seconds * 1000);
     }
-    return timestamp; // In case it's already a Date
-}
+    return timestamp;
+  }
 
-  // Handle event click to show event details
   handleEventClick(eventClickInfo) {
     this.selectedEvent = {
       title: eventClickInfo.event.title,
@@ -266,11 +244,9 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     this.showEventDetailsModall = true;
   }
 
-
-
   calculateTotalPages() {
     const pageCount = Math.ceil(this.feedbackList.length / this.itemsPerPage);
-    this.totalPages = Array.from({ length: pageCount }, (_, i) => i + 1); // Array of page numbers
+    this.totalPages = Array.from({ length: pageCount }, (_, i) => i + 1);
   }
 
   updatePaginatedFeedbackList() {
@@ -346,7 +322,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       },
     });
   }
-  
+
   markAsSolved(reportId: string) {
     this.reportService.markReportAsSolved(reportId).then(() => {
       alert('Report marked as solved.');
@@ -356,22 +332,22 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
 
   fetchReports() {
     this.reportService.getReports().subscribe((reports) => {
-      this.reports = reports || []; // Set reports to an empty array if no data
-      this.calculateReportPages();   // Calculate pages based on fetched reports
-      this.updatePaginatedReportList(); // Update paginated list
+      this.reports = reports || [];
+      this.calculateReportPages();
+      this.updatePaginatedReportList();
     });
   }
   calculateReportPages() {
     const pageCount = Math.ceil(this.reports.length / this.itemsPerPage);
-    this.totalPages = Array.from({ length: pageCount }, (_, i) => i + 1); // Creates an array of page numbers
+    this.totalPages = Array.from({ length: pageCount }, (_, i) => i + 1);
   }
-  
+
   updatePaginatedReportList() {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedReportList = this.reports.slice(startIndex, endIndex); // Paginate reports
+    this.paginatedReportList = this.reports.slice(startIndex, endIndex);
   }
-  
+
   createDepartmentChart(departmentCounts: { [department: string]: number }) {
     const ctx = document.getElementById('departmentChart') as HTMLCanvasElement;
     const labels = Object.keys(departmentCounts);
@@ -386,20 +362,20 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
             label: 'Users per Department',
             data: data,
             backgroundColor: [
-              '#3498db', // CTE
-              '#e74c3c', // Unknown
-              '#f39c12', // CET
-              '#f1c40f', // CAS
-              '#1abc9c', // CICS
+              '#3498db',
+              '#e74c3c',
+              '#f39c12',
+              '#f1c40f',
+              '#1abc9c',
             ],
-            borderWidth: 2, // Adjust border width as needed
+            borderWidth: 2,
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        aspectRatio: 1.2, // Adjust this to control chart sizing  
+        aspectRatio: 1.2,
         plugins: {
           legend: {
             position: 'top',
@@ -408,223 +384,228 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       },
     });
   }
-  // submitEventForm() {
-  //   // Convert roles to lowercase before adding them to Firestore
-  //   if (this.eventForm.title && this.eventForm.date && this.eventForm.time && this.eventForm.thumbnailUrl) {
-  //     // Ensure all roles in `invited` are lowercase
-  //     this.eventForm.invited = this.eventForm.invited.map((role: string) => role.toLowerCase());
-      
-  //     this.firestore.collection('events').add(this.eventForm).then(() => {
-  //       this.showEventForm = false;
-  //       this.eventForm = { title: '', date: '', time: '', location: '', invited: [], description: '', thumbnailUrl: '' };
-  //     });
-  //   } else {
-  //     alert("Please wait for the thumbnail to finish uploading or fill all required fields.");
-  //   }
-  // }
-  
 
   uploadThumbnail(event: any) {
     const file = event.target.files[0];
     const filePath = `thumbnails/${new Date().getTime()}_${file.name}`;
     const fileRef = this.storage.ref(filePath);
-  
+
     fileRef.put(file).then(() => {
       fileRef.getDownloadURL().subscribe((url) => {
-        this.eventForm.thumbnailUrl = url; // Set the thumbnail URL after upload completes
+        this.eventForm.thumbnailUrl = url;
       });
     });
   }
-  
+
   loadAttendeeDetails() {
     if (typeof this.selectedEventId === 'string' && this.selectedEventId) {
-        console.log("Loading attendees for event ID:", this.selectedEventId);
+      console.log('Loading attendees for event ID:', this.selectedEventId);
 
-        // Fetching attendees from the subcollection 'attendees'
-        this.firestore
-            .collection('events')
-            .doc(this.selectedEventId)
-            .collection('attendees')
-            .valueChanges()
-            .subscribe((attendees: any[]) => {
-                console.log("Fetched Attendees:", attendees); // Log fetched attendees
-                this.attendeeList = attendees;
-                this.updateDepartmentChart(attendees); // Update chart after loading attendees
-            });
+      this.firestore
+        .collection('events')
+        .doc(this.selectedEventId)
+        .collection('attendees')
+        .valueChanges()
+        .subscribe((attendees: any[]) => {
+          console.log('Fetched Attendees:', attendees);
+          this.attendeeList = attendees;
+          this.updateDepartmentChart(attendees);
+        });
     } else {
-        console.error("Invalid selectedEventId:", this.selectedEventId);
+      console.error('Invalid selectedEventId:', this.selectedEventId);
     }
-}
-updateDepartmentChart(attendees: any[]) {
-  // Filter attendees with 'present' status only
-  const presentAttendees = attendees.filter(attendee => attendee.status === 'present');
-  
-  // Count attendees by department from the filtered list
-  const departmentCounts = this.countAttendeesByDepartment(presentAttendees);
-  const departments = Object.keys(departmentCounts);
-  const counts = Object.values(departmentCounts);
-
-  const ctx = document.getElementById('attendeesDepartmentChart') as HTMLCanvasElement;
-
-  // Destroy the previous chart if it exists to prevent overlap
-  if (this.attendeesDepartmentChart) {
-      this.attendeesDepartmentChart.destroy();
   }
+  updateDepartmentChart(attendees: any[]) {
+    const presentAttendees = attendees.filter(
+      (attendee) => attendee.status === 'present'
+    );
 
-  this.attendeesDepartmentChart = new Chart(ctx, {
+    const departmentCounts = this.countAttendeesByDepartment(presentAttendees);
+    const departments = Object.keys(departmentCounts);
+    const counts = Object.values(departmentCounts);
+
+    const ctx = document.getElementById(
+      'attendeesDepartmentChart'
+    ) as HTMLCanvasElement;
+
+    if (this.attendeesDepartmentChart) {
+      this.attendeesDepartmentChart.destroy();
+    }
+
+    this.attendeesDepartmentChart = new Chart(ctx, {
       type: 'pie',
       data: {
-          labels: departments,
-          datasets: [{
-              data: counts,
-              backgroundColor: ['#3498db', '#e74c3c', '#f39c12', '#2ecc71', '#9b59b6'],
-          }]
+        labels: departments,
+        datasets: [
+          {
+            data: counts,
+            backgroundColor: [
+              '#3498db',
+              '#e74c3c',
+              '#f39c12',
+              '#2ecc71',
+              '#9b59b6',
+            ],
+          },
+        ],
       },
       options: {
-          responsive: true,
-          plugins: {
-              legend: {
-                  position: 'top'
-              }
-          }
-      }
-  });
-}
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+        },
+      },
+    });
+  }
 
+  private countAttendeesByDepartment(attendees: any[]) {
+    const departmentCounts: { [key: string]: number } = {};
 
-private countAttendeesByDepartment(attendees: any[]) {
-  const departmentCounts: { [key: string]: number } = {};
-
-  attendees.forEach(attendee => {
+    attendees.forEach((attendee) => {
       const department = attendee.department;
       departmentCounts[department] = (departmentCounts[department] || 0) + 1;
-  });
-
-  return departmentCounts;
-}
-openEventForm() {
-  this.showEventForm = true;
-  // Initialize map after modal is shown
-  setTimeout(() => {
-    this.initializeMapWithDelay();
-  }, 500);
-}
-
-closeEventForm() {
-  if (this.map) {
-    this.map.remove();
-    this.map = null;
-  }
-  if (this.marker) {
-    this.marker = null;
-  }
-  this.showEventForm = false;
-}
-
-submitEventForm() {
-  if (this.eventForm.title && this.eventForm.date && this.eventForm.time && this.eventForm.thumbnailUrl) {
-    this.eventForm.invited = this.eventForm.invited.map((role: string) => role.toLowerCase());
-
-    this.firestore.collection('events').add(this.eventForm).then(() => {
-      this.showEventForm = false;
-      this.eventForm = {
-        title: '',
-        date: '',
-        time: '',
-        location: '',
-        invited: [],
-        description: '',
-        thumbnailUrl: '',
-        latitude: null,
-        longitude: null,
-      };
     });
-  } else {
-    alert("Please wait for the thumbnail to finish uploading or fill all required fields.");
+
+    return departmentCounts;
   }
-}
-initializeMapWithDelay() {
-  if (this.map) {
-    this.map.remove();
+  openEventForm() {
+    this.showEventForm = true;
+
+    setTimeout(() => {
+      this.initializeMapWithDelay();
+    }, 500);
   }
 
-  setTimeout(() => {
-    const mapContainer = document.getElementById('map');
-    if (!mapContainer) {
-      console.error('Map container not found');
-      return;
+  closeEventForm() {
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
     }
-
-    try {
-      this.map = L.map('map', {
-        center: [this.eventForm.latitude, this.eventForm.longitude],
-        zoom: 13,
-        layers: [
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-          })
-        ]
-      });
-
-      this.marker = L.marker([this.eventForm.latitude, this.eventForm.longitude], {
-        draggable: true
-      }).addTo(this.map);
-
-      this.marker.on('dragend', (event) => {
-        const marker = event.target;
-        const position = marker.getLatLng();
-        this.eventForm.latitude = position.lat;
-        this.eventForm.longitude = position.lng;
-      });
-
-      setTimeout(() => {
-        this.map?.invalidateSize();
-      }, 250);
-
-    } catch (error) {
-      console.error('Error initializing map:', error);
+    if (this.marker) {
+      this.marker = null;
     }
-  }, 500);
-}
-
-
-updateMarkerPosition() {
-  if (this.map && this.marker && this.eventForm.latitude && this.eventForm.longitude) {
-    const newLatLng = L.latLng(this.eventForm.latitude, this.eventForm.longitude);
-    this.marker.setLatLng(newLatLng);
-    this.map.setView(newLatLng, this.map.getZoom());
+    this.showEventForm = false;
   }
-}
 
+  submitEventForm() {
+    if (
+      this.eventForm.title &&
+      this.eventForm.date &&
+      this.eventForm.time &&
+      this.eventForm.thumbnailUrl
+    ) {
+      this.eventForm.invited = this.eventForm.invited.map((role: string) =>
+        role.toLowerCase()
+      );
 
-setLocationFromAddress() {
-  if (!this.eventForm.location || !this.map || !this.marker) return;
-
-  // Initialize the geocoder
-  const geocoder = L.Control.Geocoder.nominatim();
-
-  geocoder.geocode(this.eventForm.location, (results) => {
-    if (results && results.length > 0) {
-      const latlng = results[0].center;
-      this.eventForm.latitude = latlng.lat;
-      this.eventForm.longitude = latlng.lng;
-
-      // Update the marker position and map view
-      this.marker.setLatLng(latlng);
-      this.map.setView(latlng, this.map.getZoom());
+      this.firestore
+        .collection('events')
+        .add(this.eventForm)
+        .then(() => {
+          this.showEventForm = false;
+          this.eventForm = {
+            title: '',
+            date: '',
+            time: '',
+            location: '',
+            invited: [],
+            description: '',
+            thumbnailUrl: '',
+            latitude: null,
+            longitude: null,
+          };
+        });
     } else {
-      alert("Address not found. Please enter a valid location.");
+      alert(
+        'Please wait for the thumbnail to finish uploading or fill all required fields.'
+      );
     }
-  });
-}
+  }
+  initializeMapWithDelay() {
+    if (this.map) {
+      this.map.remove();
+    }
 
-toggleSidebar() {
-  this.isSidebarVisible = !this.isSidebarVisible;
-}
+    setTimeout(() => {
+      const mapContainer = document.getElementById('map');
+      if (!mapContainer) {
+        console.error('Map container not found');
+        return;
+      }
 
+      try {
+        this.map = L.map('map', {
+          center: [this.eventForm.latitude, this.eventForm.longitude],
+          zoom: 13,
+          layers: [
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              maxZoom: 19,
+              attribution: '© OpenStreetMap contributors',
+            }),
+          ],
+        });
 
+        this.marker = L.marker(
+          [this.eventForm.latitude, this.eventForm.longitude],
+          {
+            draggable: true,
+          }
+        ).addTo(this.map);
 
+        this.marker.on('dragend', (event) => {
+          const marker = event.target;
+          const position = marker.getLatLng();
+          this.eventForm.latitude = position.lat;
+          this.eventForm.longitude = position.lng;
+        });
 
+        setTimeout(() => {
+          this.map?.invalidateSize();
+        }, 250);
+      } catch (error) {
+        console.error('Error initializing map:', error);
+      }
+    }, 500);
+  }
 
+  updateMarkerPosition() {
+    if (
+      this.map &&
+      this.marker &&
+      this.eventForm.latitude &&
+      this.eventForm.longitude
+    ) {
+      const newLatLng = L.latLng(
+        this.eventForm.latitude,
+        this.eventForm.longitude
+      );
+      this.marker.setLatLng(newLatLng);
+      this.map.setView(newLatLng, this.map.getZoom());
+    }
+  }
+
+  setLocationFromAddress() {
+    if (!this.eventForm.location || !this.map || !this.marker) return;
+
+    const geocoder = L.Control.Geocoder.nominatim();
+
+    geocoder.geocode(this.eventForm.location, (results) => {
+      if (results && results.length > 0) {
+        const latlng = results[0].center;
+        this.eventForm.latitude = latlng.lat;
+        this.eventForm.longitude = latlng.lng;
+
+        this.marker.setLatLng(latlng);
+        this.map.setView(latlng, this.map.getZoom());
+      } else {
+        alert('Address not found. Please enter a valid location.');
+      }
+    });
+  }
+
+  toggleSidebar() {
+    this.isSidebarVisible = !this.isSidebarVisible;
+  }
 }

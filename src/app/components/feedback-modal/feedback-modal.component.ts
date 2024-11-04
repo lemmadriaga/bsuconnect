@@ -21,24 +21,23 @@ export class FeedbackModalComponent {
   }
 
   close() {
-    console.log('Manually closing modal'); // Debug log
+    console.log('Manually closing modal');
     this.modalController.dismiss();
   }
 
   async submitFeedback() {
     if (this.feedback && this.rating) {
-        try {
-            console.log('Feedback Submitted'); // Debug log
-            await this.feedbackService.saveFeedback(this.feedback, this.rating);
+      try {
+        console.log('Feedback Submitted');
+        await this.feedbackService.saveFeedback(this.feedback, this.rating);
 
-            // Dismiss the modal after submission
-            await this.modalController.dismiss({ dismissed: true });
-            console.log('Modal dismissed'); // Confirmation log
-        } catch (error) {
-            console.error('Error submitting feedback:', error);
-        }
+        await this.modalController.dismiss({ dismissed: true });
+        console.log('Modal dismissed');
+      } catch (error) {
+        console.error('Error submitting feedback:', error);
+      }
     } else {
-        console.warn('Feedback or rating is missing'); // Validation log
+      console.warn('Feedback or rating is missing');
     }
   }
 }

@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { FeedbackService } from 'src/app/feedback.service';
 import { FeedbackModalComponent } from 'src/app/components/feedback-modal/feedback-modal.component';
 import { ModalController } from '@ionic/angular';
+import { FcmService } from 'src/app/fcm.service';
 
 @Component({
   selector: 'app-profile',
@@ -14,17 +15,19 @@ import { ModalController } from '@ionic/angular';
 })
 export class ProfilePage implements OnInit {
   userData$: Observable<any>;
+  notificationsEnabled = false;
 
   constructor(
     private authService: AuthenticationService,
     private alertController: AlertController,
     private router: Router,
     private feedbackService: FeedbackService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private fcmService: FcmService
   ) {}
 
   async ngOnInit() {
-    this.userData$ = this.authService.getUserData$(); 
+    this.userData$ = this.authService.getUserData$();
   }
 
   async uploadImage() {
@@ -32,58 +35,74 @@ export class ProfilePage implements OnInit {
     input.type = 'file';
     input.accept = 'image/*';
 
-    // Event handler for when a file is selected
     input.onchange = async (event: any) => {
       const file = event.target.files[0];
       if (file) {
         const userId = await this.authService.getCurrentUserId();
         if (userId) {
           try {
-            // Upload the file and wait for the operation to complete
-            await this.authService.uploadProfilePicture(userId, file).toPromise();
-            this.presentAlert('Success', 'Profile picture updated successfully.');
+            await this.authService
+              .uploadProfilePicture(userId, file)
+              .toPromise();
+            this.presentAlert(
+              'Success',
+              'Profile picture updated successfully.'
+            );
 
-            // Optional: Refresh the user data observable to get the new profile picture URL
             this.userData$ = this.authService.getUserData$();
           } catch (error) {
             console.error('Error uploading profile picture:', error);
-            this.presentAlert('Error', 'Failed to update profile picture. Please try again.');
+            this.presentAlert(
+              'Error',
+              'Failed to update profile picture. Please try again.'
+            );
           }
         }
       }
     };
-    input.click(); // Programmatically trigger the file input
+    input.click();
   }
 
   async presentAlert(header: string, message: string) {
     const alert = await this.alertController.create({
       header,
       message,
-      buttons: ['OK']
+      buttons: ['OK'],
     });
     await alert.present();
   }
 
-  // Sign-out method
-  signOut() {
-    this.authService.logoutUser().then(() => {
-      console.log('User signed out successfully');
-      this.router.navigate(['/authentication']);
-    }).catch(error => {
-      console.error('Error signing out:', error);
-    });
+  async signOut() {
+    const userId = await this.authService.getCurrentUserId();
+    if (userId) {
+      await this.authService.updateUserStatus(userId, false);
+    }
+
+    this.authService
+      .logoutUser()
+      .then(() => {
+        console.log('User signed out successfully and marked offline');
+        this.router.navigate(['/authentication']);
+      })
+      .catch((error) => {
+        console.error('Error signing out:', error);
+      });
   }
 
-  // Navigation to ForumPage
   navigateToForum() {
-    this.userData$.subscribe(userData => {
+    this.userData$.subscribe((userData) => {
       if (userData) {
-        this.router.navigate(['/forum'], { queryParams: { userId: userData.uid, avatar: userData.profilePictureUrl, role: userData.role } });
+        this.router.navigate(['/forum'], {
+          queryParams: {
+            userId: userData.uid,
+            avatar: userData.profilePictureUrl,
+            role: userData.role,
+          },
+        });
       }
     });
   }
 
-  // Open feedback modal
   async openFeedback() {
     const modal = await this.modalController.create({
       component: FeedbackModalComponent,
@@ -92,5 +111,13 @@ export class ProfilePage implements OnInit {
 
     const { data } = await modal.onDidDismiss();
     console.log('Modal dismissed with data:', data);
+  }
+
+  toggleNotifications() {
+    if (this.notificationsEnabled) {
+      this.fcmService.requestPermission();
+    } else {
+      console.log('Notifications disabled');
+    }
   }
 }

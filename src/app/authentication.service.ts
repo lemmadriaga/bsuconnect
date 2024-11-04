@@ -3,7 +3,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import firebase from 'firebase/compat/app';
-import { from, Observable, of} from 'rxjs';
+import { from, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import 'firebase/compat/auth';
 import { PushNotifications } from '@capacitor/push-notifications';
@@ -29,20 +29,16 @@ export class AuthenticationService {
   ) {}
 
   async saveFCMToken(userId: string) {
-    // Request the FCM token from Push Notifications
     PushNotifications.register();
-  
-    // Listen for successful registration to get the FCM token
+
     PushNotifications.addListener('registration', async (tokenData) => {
       const fcmToken = tokenData.value;
-  
-      // Save the token to Firestore under the user's document
+
       await this.firestore.collection('users').doc(userId).update({
-        fcmToken: fcmToken
+        fcmToken: fcmToken,
       });
     });
   }
-  
 
   registerUser(
     email: string,
@@ -64,18 +60,24 @@ export class AuthenticationService {
             role: 'student',
             department,
           };
-  
-          return this.firestore.collection('users').doc(user.uid).set(userData)
+
+          return this.firestore
+            .collection('users')
+            .doc(user.uid)
+            .set(userData)
             .then(() => {
-              // Create an entry in `userStatus` collection for tracking online status
-              return this.firestore.collection('userStatus').doc(user.uid).set({
-                uid: user.uid,
-                online: false,
-                lastActive: new Date()
-              }).then(async () => {
-                await this.saveFCMToken(user.uid); // Save FCM token after registration
-                return userData;
-              });
+              return this.firestore
+                .collection('userStatus')
+                .doc(user.uid)
+                .set({
+                  uid: user.uid,
+                  online: false,
+                  lastActive: new Date(),
+                })
+                .then(async () => {
+                  await this.saveFCMToken(user.uid);
+                  return userData;
+                });
             });
         } else {
           throw new Error('User creation failed');
@@ -86,38 +88,39 @@ export class AuthenticationService {
         throw error;
       });
   }
-  
-  
 
-  // Sign in existing user
-  loginUser(email: string, password: string): Promise<firebase.auth.UserCredential> {
-    return this.afAuth.signInWithEmailAndPassword(email, password)
+  loginUser(
+    email: string,
+    password: string
+  ): Promise<firebase.auth.UserCredential> {
+    return this.afAuth
+      .signInWithEmailAndPassword(email, password)
       .then(async (userCredential) => {
         const user = userCredential.user;
         if (user) {
-          await this.updateUserStatus(user.uid, true); // Set online status on login
-          await this.saveFCMToken(user.uid); // Save or update FCM token on login
+          await this.updateUserStatus(user.uid, true);
+          await this.saveFCMToken(user.uid);
         }
         return userCredential;
       });
   }
-  
+
   updateUserStatus(userId: string, online: boolean): Promise<void> {
-    return this.firestore.collection('userStatus').doc(userId).set({
-      uid: userId,
-      online: online,
-      lastActive: new Date()
-    }, { merge: true }); // `merge: true` ensures existing fields aren’t overwritten
+    return this.firestore.collection('userStatus').doc(userId).set(
+      {
+        uid: userId,
+        online: online,
+        lastActive: new Date(),
+      },
+      { merge: true }
+    );
   }
-    
 
   googleSignIn(): Promise<firebase.auth.UserCredential> {
     const provider = new firebase.auth.GoogleAuthProvider();
     return this.afAuth.signInWithPopup(provider);
   }
-  
 
-  // Get user role
   getUserRole$(): Observable<string | null> {
     return this.afAuth.authState.pipe(
       switchMap((user) => {
@@ -128,8 +131,8 @@ export class AuthenticationService {
             .get()
             .pipe(
               map((doc) => {
-                const data = doc.data() as UserData; // Cast to UserData
-                return data ? data.role : null; // Access role directly
+                const data = doc.data() as UserData;
+                return data ? data.role : null;
               })
             );
         } else {
@@ -139,41 +142,42 @@ export class AuthenticationService {
     );
   }
 
-  // Reset password
   resetPassword(email: string): Promise<void> {
     return this.afAuth.sendPasswordResetEmail(email);
   }
 
   logoutUser(): Promise<void> {
-    return this.afAuth.currentUser.then(user => {
+    return this.afAuth.currentUser.then((user) => {
       if (user) {
-        this.updateUserStatus(user.uid, false); // Set offline status on logout
+        this.updateUserStatus(user.uid, false);
       }
       return this.afAuth.signOut();
     });
   }
-  
+
   async sendPasswordResetEmail(email: string) {
     return await this.afAuth.sendPasswordResetEmail(email);
   }
 
   getUserData$(): Observable<any> {
     return this.afAuth.authState.pipe(
-      switchMap(user => {
+      switchMap((user) => {
         if (user) {
-          return this.firestore.doc(`users/${user.uid}`).valueChanges().pipe(
-            map(userData => {
-              return userData;
-            })
-          );
+          return this.firestore
+            .doc(`users/${user.uid}`)
+            .valueChanges()
+            .pipe(
+              map((userData) => {
+                return userData;
+              })
+            );
         } else {
-          console.warn('No authenticated user'); 
+          console.warn('No authenticated user');
           return of(null);
         }
       })
     );
   }
-  
 
   uploadProfilePicture(userId: string, file: File): Observable<string> {
     const filePath = `profile_pictures/${userId}`;
@@ -194,70 +198,75 @@ export class AuthenticationService {
     const user = await this.afAuth.currentUser;
     return user ? user.uid : null;
   }
-  
 
-  
   getTotalUserCount(): Observable<number> {
     return this.firestore
       .collection('users')
       .get()
+      .pipe(map((snapshot) => snapshot.size));
+  }
+
+  updateUserProfile(
+    userId: string,
+    profileData: Partial<UserData>
+  ): Promise<void> {
+    return this.firestore.collection('users').doc(userId).update(profileData);
+  }
+
+  getUserDepartmentCounts(): Observable<{ [department: string]: number }> {
+    return this.firestore
+      .collection('users')
+      .valueChanges()
       .pipe(
-        map((snapshot) => snapshot.size) // `snapshot.size` gives the total number of documents
+        map((users: any[]) => {
+          return users.reduce((acc, user) => {
+            const department = user.department || 'Unknown';
+            acc[department] = (acc[department] || 0) + 1;
+            return acc;
+          }, {} as { [department: string]: number });
+        })
       );
   }
 
-  updateUserProfile(userId: string, profileData: Partial<UserData>): Promise<void> {
-    return this.firestore.collection('users').doc(userId).update(profileData);
-  }
-  
-  getUserDepartmentCounts(): Observable<{ [department: string]: number }> {
-    return this.firestore.collection('users').valueChanges().pipe(
-      map((users: any[]) => {
-        return users.reduce((acc, user) => {
-          const department = user.department || 'Unknown'; // Handle missing departments
-          acc[department] = (acc[department] || 0) + 1;
-          return acc;
-        }, {} as { [department: string]: number });
-      })
-    );
-  }
-   // Method to get the user ID from Firebase Authentication
-   getUserId(): Observable<string | null> {
+  getUserId(): Observable<string | null> {
     return this.afAuth.authState.pipe(
-      switchMap(user => (user ? of(user.uid) : of(null)))
+      switchMap((user) => (user ? of(user.uid) : of(null)))
     );
   }
 
-getUserName(): Observable<string | null> {
-  return this.getUserId().pipe(
-      switchMap(userId => {
-          if (userId) {
-              return this.firestore.collection('users').doc(userId).valueChanges().pipe(
-                  map((userData: any) => userData?.fullName ?? null) // Change to `fullName`
-              );
-          }
-          return of(null);
+  getUserName(): Observable<string | null> {
+    return this.getUserId().pipe(
+      switchMap((userId) => {
+        if (userId) {
+          return this.firestore
+            .collection('users')
+            .doc(userId)
+            .valueChanges()
+            .pipe(map((userData: any) => userData?.fullName ?? null));
+        }
+        return of(null);
       })
-  );
-}
+    );
+  }
 
-// Method to get the user's department from Firestore
-getUserDepartment(): Observable<string | null> {
-  return this.getUserId().pipe(
-      switchMap(userId => {
-          if (userId) {
-              console.log("User ID in getUserDepartment:", userId);
-              return this.firestore.collection('users').doc(userId).valueChanges().pipe(
-                  map((userData: any) => {
-                      console.log("User data from Firestore:", userData); // Log entire document
-                      return userData?.department ?? null;
-                  })
-              );
-          }
-          return of(null);
+  getUserDepartment(): Observable<string | null> {
+    return this.getUserId().pipe(
+      switchMap((userId) => {
+        if (userId) {
+          console.log('User ID in getUserDepartment:', userId);
+          return this.firestore
+            .collection('users')
+            .doc(userId)
+            .valueChanges()
+            .pipe(
+              map((userData: any) => {
+                console.log('User data from Firestore:', userData);
+                return userData?.department ?? null;
+              })
+            );
+        }
+        return of(null);
       })
-  );
-}
-
-
+    );
+  }
 }

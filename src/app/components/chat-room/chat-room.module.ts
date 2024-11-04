@@ -18,7 +18,7 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     IonicModule,
-    RouterModule.forChild(routes) // Ensure this line is correct
+    RouterModule.forChild(routes) 
   ],
   declarations: [ChatRoomComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

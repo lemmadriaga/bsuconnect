@@ -12,7 +12,6 @@ export class MessagingService {
     this.afMessaging.requestToken.subscribe(
       (token) => {
         console.log('Permission granted! Token:', token);
-        // Save the token to Firestore or your server for later use
       },
       (error) => {
         console.error('Permission denied:', error);
@@ -23,7 +22,6 @@ export class MessagingService {
   listenForMessages() {
     this.afMessaging.messages.subscribe((message) => {
       console.log('New message received:', message);
-      // Handle incoming messages (e.g., show an alert or local notification)
     });
   }
 }

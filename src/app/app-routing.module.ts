@@ -8,7 +8,7 @@ import { ChatRoomComponent } from './components/chat-room/chat-room.component';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'authentication',
+    redirectTo: 'splash',
     pathMatch: 'full',
   },
   {
@@ -60,16 +60,25 @@ const routes: Routes = [
   { path: 'events', component: EventsPage },
   { path: 'event-details/:id', component: EventDetailsPage },
 
-  
-    {
-      path: 'chat-room/:id',
-      loadChildren: () => import('./components/chat-room/chat-room.module').then(m => m.ChatRoomModule)
-    },  {
-    path: 'reset-password',
-    loadChildren: () => import('./reset-password/reset-password.module').then( m => m.ResetPasswordPageModule)
+  {
+    path: 'chat-room/:id',
+    loadChildren: () =>
+      import('./components/chat-room/chat-room.module').then(
+        (m) => m.ChatRoomModule
+      ),
   },
-
-  
+  {
+    path: 'reset-password',
+    loadChildren: () =>
+      import('./reset-password/reset-password.module').then(
+        (m) => m.ResetPasswordPageModule
+      ),
+  },
+  {
+    path: 'splash',
+    loadChildren: () =>
+      import('./splash/splash.module').then((m) => m.SplashPageModule),
+  },
 ];
 
 @NgModule({

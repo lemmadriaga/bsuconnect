@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ForumService, Post, Comment } from '../../forum.service';
 import { AuthenticationService } from '../../authentication.service';
 import { AlertController } from '@ionic/angular';
-import { AngularFireStorage } from '@angular/fire/compat/storage'; // Import Firebase storage
-import { finalize } from 'rxjs/operators'; // To handle completion of the upload
+import { AngularFireStorage } from '@angular/fire/compat/storage';
+import { finalize } from 'rxjs/operators';
 import { Timestamp } from 'firebase/firestore';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { CommentModalComponent } from 'src/app/components/comment-modal/comment-modal.component';
@@ -18,15 +18,15 @@ export class ForumPage implements OnInit {
   posts: Post[] = [];
   userData: any;
   newPostContent: string = '';
-  selectedImageUrl: string | null = null; // URL of the selected image for preview
-  selectedImageFile: File | null = null; // File reference for the selected image
+  selectedImageUrl: string | null = null;
+  selectedImageFile: File | null = null;
 
   constructor(
     private modalController: ModalController,
     private forumService: ForumService,
     private authService: AuthenticationService,
     private alertController: AlertController,
-    private storage: AngularFireStorage // Inject AngularFireStorage
+    private storage: AngularFireStorage
   ) {}
 
   ngOnInit() {
@@ -40,19 +40,20 @@ export class ForumPage implements OnInit {
     this.listenForNotifications();
   }
   listenForNotifications() {
-    PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      console.log('Push notification received:', notification);
-  
-      // Display the notification content or update the UI as needed
-      // You can add custom handling based on notification data, e.g., showing an alert
-      if (notification.data.type === 'chat') {
-        // Handle chat notification
-        alert(`New message from ${notification.data.senderName}: ${notification.body}`);
-      } else if (notification.data.type === 'forum') {
-        // Handle forum notification
-        alert(`New forum post: ${notification.body}`);
+    PushNotifications.addListener(
+      'pushNotificationReceived',
+      (notification) => {
+        console.log('Push notification received:', notification);
+
+        if (notification.data.type === 'chat') {
+          alert(
+            `New message from ${notification.data.senderName}: ${notification.body}`
+          );
+        } else if (notification.data.type === 'forum') {
+          alert(`New forum post: ${notification.body}`);
+        }
       }
-    });
+    );
   }
   async showNotificationAlert(title: string, message: string) {
     const alert = await this.alertController.create({
@@ -62,13 +63,12 @@ export class ForumPage implements OnInit {
     });
     await alert.present();
   }
-  // Method to handle image selection
+
   onImageSelected(event: Event) {
     const fileInput = event.target as HTMLInputElement;
     if (fileInput.files && fileInput.files[0]) {
       this.selectedImageFile = fileInput.files[0];
 
-      // Generate a preview of the image
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.selectedImageUrl = e.target.result;
@@ -82,37 +82,36 @@ export class ForumPage implements OnInit {
 
     let imageUrl: string | null = null;
 
-    // Ensure authorAvatar is defined before calling savePost
-    const authorAvatar = this.userData?.avatar || null; // Get authorAvatar from userData or set to null
+    const authorAvatar = this.userData?.avatar || null;
 
-    // Upload the image if one is selected
     if (this.selectedImageFile) {
       const filePath = `posts/${Date.now()}_${this.selectedImageFile.name}`;
       const fileRef = this.storage.ref(filePath);
       const uploadTask = this.storage.upload(filePath, this.selectedImageFile);
 
-      // Wait for the upload to complete and get the download URL
       await uploadTask
         .snapshotChanges()
         .pipe(
           finalize(async () => {
             imageUrl = await fileRef.getDownloadURL().toPromise();
-            this.savePost(imageUrl, authorAvatar); // Pass authorAvatar to savePost
+            this.savePost(imageUrl, authorAvatar);
           })
         )
         .toPromise();
     } else {
-      // Save post without an image
       this.savePost(null, authorAvatar);
     }
   }
 
-  // Method to save post with or without image URL
   private async savePost(imageUrl: string | null, authorAvatar: string | null) {
     try {
-      await this.forumService.createPost(this.newPostContent, this.userData, imageUrl);
+      await this.forumService.createPost(
+        this.newPostContent,
+        this.userData,
+        imageUrl
+      );
       this.newPostContent = '';
-      this.selectedImageUrl = null; // Reset selected image
+      this.selectedImageUrl = null;
       this.selectedImageFile = null;
 
       if (this.userData.role !== 'faculty') {
@@ -132,7 +131,11 @@ export class ForumPage implements OnInit {
     if (!commentContent.trim()) return;
 
     try {
-      await this.forumService.addComment(post.id!, commentContent, this.userData);
+      await this.forumService.addComment(
+        post.id!,
+        commentContent,
+        this.userData
+      );
     } catch (error) {
       console.error('Error adding comment:', error);
     }
@@ -170,7 +173,7 @@ export class ForumPage implements OnInit {
 
   convertTimestampToDate(timestamp: Timestamp | undefined): Date | null {
     if (!timestamp || !timestamp.seconds) {
-      return null; // Return null if the timestamp is undefined or invalid
+      return null;
     }
     return new Date(timestamp.seconds * 1000);
   }

@@ -18,14 +18,12 @@ export class PostManagementComponent implements OnInit {
   constructor(private forumService: ForumService) {}
 
   ngOnInit() {
-    // Fetch all approved posts and apply initial filters
     this.forumService.getPosts().subscribe((posts) => {
       this.allPosts = posts;
       this.approvedPosts = posts.filter((post) => post.approved);
       this.applyFilters();
     });
 
-    // Fetch only posts pending approval
     this.forumService.getPostsForApproval().subscribe((posts) => {
       this.pendingPosts = posts;
       this.applyFilters();
@@ -50,7 +48,6 @@ export class PostManagementComponent implements OnInit {
   approvePost(post: Post) {
     this.forumService.approvePost(post.id!).then(() => {
       post.approved = true;
-      // Move post from pending to approved lists
       this.pendingPosts = this.pendingPosts.filter((p) => p.id !== post.id);
       this.approvedPosts.push(post);
       this.applyFilters();
@@ -66,15 +63,13 @@ export class PostManagementComponent implements OnInit {
   }
 
   private applyFilters() {
-    // Filter posts based on the current filter (e.g., 'all', 'pending', 'approved')
     let filtered =
       this.currentFilter === 'pending'
         ? [...this.pendingPosts]
         : this.currentFilter === 'approved'
         ? [...this.approvedPosts]
         : [...this.allPosts];
-  
-    // Apply search term
+
     if (this.searchTerm) {
       const searchLower = this.searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -83,16 +78,13 @@ export class PostManagementComponent implements OnInit {
           post.authorName.toLowerCase().includes(searchLower)
       );
     }
-  
-    // Apply sorting by timestamp
+
     filtered.sort((a, b) => {
       const dateA = new Date(a.timestamp).getTime();
       const dateB = new Date(b.timestamp).getTime();
       return this.currentSort === 'newest' ? dateB - dateA : dateA - dateB;
     });
-  
-    // Update filteredPosts with the final filtered array
+
     this.filteredPosts = filtered;
   }
-  
 }
