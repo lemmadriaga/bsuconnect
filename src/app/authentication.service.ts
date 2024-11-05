@@ -97,11 +97,14 @@ export class AuthenticationService {
       .signInWithEmailAndPassword(email, password)
       .then(async (userCredential) => {
         const user = userCredential.user;
-        if (user) {
+        if (user && user.emailVerified) {
+          // Check if email is verified
           await this.updateUserStatus(user.uid, true);
           await this.saveFCMToken(user.uid);
+          return userCredential;
+        } else {
+          throw new Error('Please verify your email before logging in.');
         }
-        return userCredential;
       });
   }
 
@@ -268,5 +271,14 @@ export class AuthenticationService {
         return of(null);
       })
     );
+  }
+
+  async sendVerificationEmail(): Promise<void> {
+    const user = await this.afAuth.currentUser;
+    if (user) {
+      return user.sendEmailVerification();
+    } else {
+      throw new Error('No user is currently logged in');
+    }
   }
 }

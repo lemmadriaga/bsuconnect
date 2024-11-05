@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { AuthenticationService } from '../authentication.service';
 import { take } from 'rxjs';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-authentication',
@@ -20,7 +21,8 @@ export class AuthenticationPage implements AfterViewInit {
     public formBuilder: FormBuilder,
     private router: Router,
     public loadingCtrl: LoadingController,
-    public authService: AuthenticationService
+    public authService: AuthenticationService,
+    public alertCtrl: AlertController
   ) {}
 
   ngOnInit() {
@@ -68,18 +70,29 @@ export class AuthenticationPage implements AfterViewInit {
       const contact = this.regForm.value.contact;
       const department = this.regForm.value.department;
 
-      const user = await this.authService
-        .registerUser(email, password, fullName, contact, department)
-        .catch((error) => {
-          console.log(error);
+      try {
+        const user = await this.authService.registerUser(
+          email,
+          password,
+          fullName,
+          contact,
+          department
+        );
+        if (user) {
+          await this.authService.sendVerificationEmail(); // Send verification email
           loading.dismiss();
-        });
 
-      if (user) {
-        loading.dismiss();
-        this.router.navigate(['student-dashboard/forum']);
-      } else {
-        console.log('Provide correct values ');
+          // Show verification alert
+          const alert = await this.alertCtrl.create({
+            header: 'Verify Your Email',
+            message:
+              'We have sent you an email. Please verify your account before logging in.',
+            buttons: ['OK'],
+          });
+          await alert.present();
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
         loading.dismiss();
       }
     } else {

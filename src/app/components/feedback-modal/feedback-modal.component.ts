@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, AlertController } from '@ionic/angular';
 import { FeedbackService } from 'src/app/feedback.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-feedback-modal',
@@ -13,7 +14,9 @@ export class FeedbackModalComponent {
 
   constructor(
     private modalController: ModalController,
-    private feedbackService: FeedbackService
+    private feedbackService: FeedbackService,
+    private alertController: AlertController,
+    private router: Router
   ) {}
 
   setRating(star: number) {
@@ -31,6 +34,8 @@ export class FeedbackModalComponent {
         console.log('Feedback Submitted');
         await this.feedbackService.saveFeedback(this.feedback, this.rating);
 
+        await this.showThankYouAlert(); // Show the alert after feedback submission
+
         await this.modalController.dismiss({ dismissed: true });
         console.log('Modal dismissed');
       } catch (error) {
@@ -39,5 +44,22 @@ export class FeedbackModalComponent {
     } else {
       console.warn('Feedback or rating is missing');
     }
+  }
+
+  async showThankYouAlert() {
+    const alert = await this.alertController.create({
+      header: 'Thank You!',
+      message: 'Thank you for your feedback!',
+      buttons: [
+        {
+          text: 'Close',
+          handler: () => {
+            this.router.navigate(['/profile']); 
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 }
