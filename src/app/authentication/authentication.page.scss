@@ -88,7 +88,8 @@ form.sign-in-form {
 }
 
 .input-field {
-  position: relative;   max-width: 380px;
+  position: relative;
+  max-width: 380px;
   width: 100%;
   background-color: #f0f0f0;
   margin: 10px 0;
@@ -144,11 +145,15 @@ form.sign-in-form {
 }
 
 .forgot-password {
-  position: absolute;   bottom: -30px;   right: 10px;   font-size: 0.9rem;
+  position: absolute;
+  bottom: -30px;
+  right: 10px;
+  font-size: 0.9rem;
 }
 
 .forgot-password a {
-  color: #F21622;   text-decoration: none;
+  color: #f21622;
+  text-decoration: none;
 }
 
 .forgot-password a:hover {
@@ -180,7 +185,6 @@ form.sign-in-form {
   transition: 0.3s;
 }
 
-
 .google-btn {
   display: flex;
   align-items: center;
@@ -200,18 +204,18 @@ form.sign-in-form {
   ion-icon {
     font-size: 1.5rem;
     margin-right: 10px;
-    color: #F21622;
+    color: #f21622;
   }
 
   &:hover {
     background-color: #f0f0f0;
-    border: 1px solid #F21622;
+    border: 1px solid #f21622;
   }
 }
 
 .btn {
   width: 150px;
-  background-color: #F21622;
+  background-color: #f21622;
   border-color: #fff;
   border-width: 2;
   outline: none;
@@ -225,16 +229,16 @@ form.sign-in-form {
   transition: 0.5s;
 
   &:disabled {
-    background-color: #cccccc; 
-    color: #888888;          
-    cursor: not-allowed;      
+    background-color: #cccccc;
+    color: #888888;
+    cursor: not-allowed;
   }
 }
 
 .btn:hover {
   background-color: #fff;
-  color: #CFA865;
-  border-color: #CFA865;
+  color: #cfa865;
+  border-color: #cfa865;
   border: 1px solid;
 }
 
@@ -256,7 +260,7 @@ form.sign-in-form {
   top: -10%;
   right: 48%;
   transform: translateY(-50%);
-  background-image: linear-gradient(-45deg, #F21622 0%, #F21622 100%);
+  background-image: linear-gradient(-45deg, #f21622 0%, #f21622 100%);
   transition: 1.8s ease-in-out;
   border-radius: 50%;
   z-index: 6;
@@ -271,18 +275,19 @@ form.sign-in-form {
 .panel {
   display: flex;
   flex-direction: column;
-  align-items: center; 
-  justify-content: center; 
+  align-items: center;
+  justify-content: center;
   text-align: center;
   z-index: 6;
-  height: 100%;   padding: 3rem;
+  height: 100%;
+  padding: 3rem;
 }
 
-.left-panel .content, 
+.left-panel .content,
 .right-panel .content {
   display: flex;
   flex-direction: column;
-  align-items: center; 
+  align-items: center;
   text-align: center;
 }
 
@@ -295,7 +300,6 @@ form.sign-in-form {
   pointer-events: none;
   padding: 3rem;
 }
-
 
 .panel .content {
   color: #fff;
@@ -310,15 +314,14 @@ form.sign-in-form {
 }
 
 .panel .content p {
-  font-size: 1rem; 
-  line-height: 1.5; 
-  color: #ffffff; 
-  max-width: 80%; 
-  margin: 0 auto; 
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #ffffff;
+  max-width: 80%;
+  margin: 0 auto;
   margin-top: 10px;
-  font-weight: 400; 
+  font-weight: 400;
 }
-
 
 .btn.transparent {
   margin: 0;
@@ -335,7 +338,6 @@ form.sign-in-form {
 .right-panel .content {
   transform: translateX(800px);
 }
-
 
 .container.sign-up-mode:before {
   transform: translate(100%, -50%);
@@ -480,25 +482,35 @@ form.sign-in-form {
 }
 @media (max-width: 600px) {
   .panel .content p {
-    font-size: 0.9rem;     line-height: 1.4;     max-width: 90%;     padding: 0 10px;     text-align: center;     font-family: 'Poppins', sans-serif;
-    margin-top: 5%;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    max-width: 90%;
+    padding: 0 10px;
+    text-align: center;
+    font-family: "Poppins", sans-serif;
+    margin-top: 2%;
   }
 
   .panel .content h3 {
     font-size: 1.2rem;
-    margin-top: 3%;   }
+    margin-top: 3%;
+  }
 
   .btn.transparent {
-    width: 140px;     height: 40px;
-    font-size: 0.8rem;   }
+    width: 140px;
+    height: 40px;
+    font-size: 0.8rem;
+  }
 
-    .left-panel, .right-panel {
-    padding: 2rem 5%;   }
-  
+  .left-panel,
+  .right-panel {
+    padding: 2rem 5%;
+  }
+
   .panel .content {
-    padding: 0 1rem;   }
+    padding: 0 1rem;
+  }
 }
-
 
 @media (max-width: 570px) {
   form {
