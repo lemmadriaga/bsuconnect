@@ -109,7 +109,7 @@ export class AuthenticationService {
     return this.firestore.collection('userStatus').doc(userId).set(
       {
         uid: userId,
-        online: online,
+        isOnline: online,
         lastActive: new Date(),
       },
       { merge: true }
