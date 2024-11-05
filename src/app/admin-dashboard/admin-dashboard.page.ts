@@ -17,6 +17,8 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import { HostListener } from '@angular/core';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 interface TabItem {
   label: string;
@@ -500,27 +502,28 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
         role.toLowerCase()
       );
 
-      this.firestore
-        .collection('events')
-        .add(this.eventForm)
-        .then(() => {
-          this.showEventForm = false;
-          this.eventForm = {
-            title: '',
-            date: '',
-            time: '',
-            location: '',
-            invited: [],
-            description: '',
-            thumbnailUrl: '',
-            latitude: null,
-            longitude: null,
-          };
-        });
+      const eventDoc = this.selectedEventId
+        ? this.firestore.collection('events').doc(this.selectedEventId) 
+        : this.firestore.collection('events').doc(); 
+
+      eventDoc.set(this.eventForm, { merge: true }).then(() => {
+        this.showEventForm = false;
+        this.selectedEventId = null;
+        this.eventForm = {
+          title: '',
+          date: '',
+          time: '',
+          location: '',
+          invited: [],
+          description: '',
+          thumbnailUrl: '',
+          latitude: 0,
+          longitude: 0,
+        };
+        this.loadEvents(); 
+      });
     } else {
-      alert(
-        'Please wait for the thumbnail to finish uploading or fill all required fields.'
-      );
+      alert('Please complete all required fields.');
     }
   }
   initializeMapWithDelay() {
@@ -607,5 +610,70 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
 
   toggleSidebar() {
     this.isSidebarVisible = !this.isSidebarVisible;
+  }
+
+  downloadPDF() {
+    const doc = new jsPDF();
+    doc.text('Event Attendees', 10, 10);
+
+    
+    const headers = [['Name', 'Department', 'Status']];
+
+    
+    const data = this.attendeeList.map((attendee) => [
+      attendee.name,
+      attendee.department,
+      attendee.status,
+    ]);
+
+    
+    doc.autoTable({
+      head: headers,
+      body: data,
+      startY: 20,
+    });
+
+    
+    doc.save('Event_Attendees.pdf');
+  }
+
+  editEvent(event: any) {
+    this.eventForm = {
+      ...event, 
+      invited: [...event.invited], 
+    };
+    this.selectedEventId = event.id;
+    this.showEventForm = true;
+  }
+  async deleteEvent(eventId: string) {
+    if (
+      confirm('Are you sure you want to delete this event and its attendees?')
+    ) {
+      try {
+        
+        const attendeesRef = this.firestore.collection(
+          `events/${eventId}/attendees`
+        );
+
+        
+        const attendeesSnapshot = await attendeesRef.get().toPromise();
+        const batch = this.firestore.firestore.batch(); 
+
+        attendeesSnapshot.forEach((doc) => {
+          batch.delete(doc.ref); 
+        });
+
+        await batch.commit(); 
+
+        
+        await this.firestore.collection('events').doc(eventId).delete();
+        alert('Event and its attendees deleted successfully');
+
+        
+        this.loadEvents();
+      } catch (error) {
+        console.error('Error deleting event and attendees:', error);
+      }
+    }
   }
 }

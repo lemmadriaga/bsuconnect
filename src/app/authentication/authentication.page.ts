@@ -14,6 +14,7 @@ export class AuthenticationPage implements AfterViewInit {
   regForm: FormGroup;
   loginForm: FormGroup;
   errorMessage: string | null = null;
+  showPassword = false;
 
   constructor(
     public formBuilder: FormBuilder,
@@ -23,7 +24,6 @@ export class AuthenticationPage implements AfterViewInit {
   ) {}
 
   ngOnInit() {
-    
     this.initializeForms();
   }
 
@@ -72,18 +72,18 @@ export class AuthenticationPage implements AfterViewInit {
         .registerUser(email, password, fullName, contact, department)
         .catch((error) => {
           console.log(error);
-          loading.dismiss(); 
+          loading.dismiss();
         });
 
       if (user) {
-        loading.dismiss(); 
+        loading.dismiss();
         this.router.navigate(['student-dashboard/forum']);
       } else {
         console.log('Provide correct values ');
-        loading.dismiss(); 
+        loading.dismiss();
       }
     } else {
-      loading.dismiss(); 
+      loading.dismiss();
     }
   }
 
@@ -140,7 +140,6 @@ export class AuthenticationPage implements AfterViewInit {
     }
   }
 
-
   async googleSignIn() {
     const loading = await this.loadingCtrl.create();
     await loading.present();
@@ -150,14 +149,12 @@ export class AuthenticationPage implements AfterViewInit {
       if (user) {
         console.log('User successfully logged in with Google:', user);
 
-        
         const role = await this.authService
           .getUserRole$()
           .pipe(take(1))
           .toPromise();
         console.log('User role:', role);
 
-        
         switch (role) {
           case 'admin':
             await this.router.navigate(['/admin-dashboard']);
@@ -173,7 +170,7 @@ export class AuthenticationPage implements AfterViewInit {
             break;
           default:
             console.error('Invalid role');
-            await this.router.navigate(['/authentication']); 
+            await this.router.navigate(['/authentication']);
             break;
         }
       }
@@ -209,5 +206,8 @@ export class AuthenticationPage implements AfterViewInit {
 
   tabs() {
     this.router.navigate(['tabs']);
+  }
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
   }
 }

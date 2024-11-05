@@ -149,6 +149,8 @@ form.sign-in-form {
   bottom: -30px;
   right: 10px;
   font-size: 0.9rem;
+  background-color: transparent;
+  text-decoration: none;
 }
 
 .forgot-password a {
@@ -157,7 +159,7 @@ form.sign-in-form {
 }
 
 .forgot-password a:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .social-text {
@@ -480,6 +482,13 @@ form.sign-in-form {
     transform: translate(-50%, 0);
   }
 }
+.password-toggle-icon {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  z-index: 1050;
+}
+
 @media (max-width: 600px) {
   .panel .content p {
     font-size: 0.9rem;

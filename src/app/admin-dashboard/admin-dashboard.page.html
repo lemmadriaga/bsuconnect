@@ -204,9 +204,19 @@
             <p class="text-gray-600 text-sm">
               <strong>Invited:</strong> {{ event.invited.join(', ') }}
             </p>
-            <ion-button (click)="eventDetails(event.id)" color="danger"
-              >Details</ion-button
-            >
+
+            <!-- Details, Edit, and Delete Buttons -->
+            <div class="flex space-x-2 mt-4">
+              <ion-button (click)="eventDetails(event.id)" color="danger"
+                >Details</ion-button
+              >
+              <ion-button (click)="editEvent(event)" color="danger"
+                >Edit</ion-button
+              >
+              <ion-button (click)="deleteEvent(event.id)" color="danger"
+                >Delete</ion-button
+              >
+            </div>
           </div>
         </div>
       </div>
@@ -400,6 +410,7 @@
       </div>
 
       <!-- Event Details Modal -->
+      <!-- Event Details Modal -->
       <div
         *ngIf="showEventDetailsModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
@@ -412,6 +423,13 @@
             <h2 class="text-lg font-bold">Event Attendees</h2>
             <ion-button fill="clear" (click)="closeEventDetailsModal()"
               >Close</ion-button
+            >
+          </div>
+
+          <!-- Download PDF Button -->
+          <div class="flex justify-end mb-4">
+            <ion-button color="danger" (click)="downloadPDF()"
+              >Download PDF</ion-button
             >
           </div>
 
