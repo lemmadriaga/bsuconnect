@@ -113,11 +113,11 @@ export class ProfilePage implements OnInit {
     console.log('Modal dismissed with data:', data);
   }
 
-  toggleNotifications() {
-    if (this.notificationsEnabled) {
-      this.fcmService.requestPermission();
-    } else {
-      console.log('Notifications disabled');
-    }
-  }
+  // toggleNotifications() {
+  //   if (this.notificationsEnabled) {
+  //     this.fcmService.requestPermission();
+  //   } else {
+  //     console.log('Notifications disabled');
+  //   }
+  // }
 }

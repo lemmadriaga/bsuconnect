@@ -20,9 +20,9 @@ const config: CapacitorConfig = {
       splashImmersive: true,
       layoutName: 'launch_screen',
       useDialog: true,
-      PushNotifications: {
-        presentationOptions: ['badge', 'sound', 'alert'],
-      },
+    },
+    PushNotifications: {
+      presentationOptions: ['badge', 'sound', 'alert'],
     },
   },
 };
