@@ -13,9 +13,9 @@ import { AppRoutingModule } from './app-routing.module';
 import { environment } from 'src/environments/environment';
 import { FormsModule } from '@angular/forms';
 import { FullCalendarModule } from '@fullcalendar/angular';
-
+import { CustomAlertComponent } from './custom-alert/custom-alert.component';
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, CustomAlertComponent],
   imports: [
     BrowserModule,
     FormsModule,
@@ -27,7 +27,8 @@ import { FullCalendarModule } from '@fullcalendar/angular';
     AngularFirestoreModule,
     AngularFireStorageModule,
     AngularFireMessagingModule, 
-    FullCalendarModule
+    FullCalendarModule,
+    IonicModule.forRoot()
   ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],

@@ -32,9 +32,9 @@ export class FeedbackModalComponent {
     if (this.feedback && this.rating) {
       try {
         console.log('Feedback Submitted');
-        await this.feedbackService.saveFeedback(this.feedback, this.rating);
+        await this.showThankYouAlert();
 
-        await this.showThankYouAlert(); // Show the alert after feedback submission
+        await this.feedbackService.saveFeedback(this.feedback, this.rating);
 
         await this.modalController.dismiss({ dismissed: true });
         console.log('Modal dismissed');
@@ -54,12 +54,13 @@ export class FeedbackModalComponent {
         {
           text: 'Close',
           handler: () => {
-            this.router.navigate(['/profile']); 
+            this.router.navigate(['/profile']);
           },
         },
       ],
     });
 
     await alert.present();
+    this.close();
   }
 }

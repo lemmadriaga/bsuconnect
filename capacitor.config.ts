@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.bsu.connect',
-  appName: 'BatStateU Connect+',
+  appName: 'BatStateU Connect +',
   webDir: 'www',
   plugins: {
     SplashScreen: {
