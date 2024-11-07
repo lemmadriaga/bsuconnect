@@ -221,14 +221,18 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       .subscribe((events) => {
         const calendarEvents = events.map((e) => {
           const data: any = e.payload.doc.data();
+          const start = new Date(`${data.date}T${data.time}`); // Combine date and time
+
           return {
             id: e.payload.doc.id,
             title: data.title,
-            start: data.date,
+            start: start, // Now includes both date and time
             extendedProps: {
               time: data.time,
               location: data.location,
               description: data.description,
+              duration: data.duration,
+              invited: data.invited,
             },
           };
         });
@@ -256,7 +260,10 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     this.selectedEvent = {
       title: eventClickInfo.event.title,
       date: eventClickInfo.event.start,
-      ...eventClickInfo.event.extendedProps,
+      duration: eventClickInfo.event.extendedProps.duration, // Add duration
+      invited: eventClickInfo.event.extendedProps.invited, // Add invited
+      location: eventClickInfo.event.extendedProps.location,
+      description: eventClickInfo.event.extendedProps.description,
     };
     this.showEventDetailsModall = true;
   }
@@ -752,31 +759,47 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     this.selectedReport = null;
   }
   loadMonthlyRegistrationChart() {
-    this.authService.getMonthlyRegistrationCounts().subscribe(monthlyCounts => {
-      const ctx = document.getElementById('monthlyRegistrationsChart') as HTMLCanvasElement;
-      this.monthlyRegistrationsChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-          ],
-          datasets: [{
-            label: 'User Registrations',
-            data: monthlyCounts,
-            borderWidth: 1
-          }]
-        },
-        options: {
-          scales: {
-            y: { beginAtZero: true }
+    this.authService
+      .getMonthlyRegistrationCounts()
+      .subscribe((monthlyCounts) => {
+        const ctx = document.getElementById(
+          'monthlyRegistrationsChart'
+        ) as HTMLCanvasElement;
+        this.monthlyRegistrationsChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: [
+              'January',
+              'February',
+              'March',
+              'April',
+              'May',
+              'June',
+              'July',
+              'August',
+              'September',
+              'October',
+              'November',
+              'December',
+            ],
+            datasets: [
+              {
+                label: 'User Registrations',
+                data: monthlyCounts,
+                borderWidth: 1,
+              },
+            ],
           },
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          }
-        }
+          options: {
+            scales: {
+              y: { beginAtZero: true },
+            },
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+            },
+          },
+        });
       });
-    });
   }
 }
