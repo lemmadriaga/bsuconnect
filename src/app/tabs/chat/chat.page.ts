@@ -73,13 +73,29 @@ export class ChatPage implements OnInit, OnDestroy {
     );
   }
 
+  // loadActiveUsers() {
+  //   this.activeUsersSubscription = this.chatService.getActiveUsers().subscribe(
+  //     (users) => {
+  //       this.activeUsers = users.map((user) => ({
+  //         ...user,
+  //         avatar: user.profilePictureUrl || './assets/profile-placeholder.jpg',
+  //       }));
+  //       console.log('Active users:', this.activeUsers);
+  //     },
+  //     (error) => {
+  //       console.error('Error loading active users:', error);
+  //     }
+  //   );
+  // }
   loadActiveUsers() {
     this.activeUsersSubscription = this.chatService.getActiveUsers().subscribe(
       (users) => {
-        this.activeUsers = users.map((user) => ({
-          ...user,
-          avatar: user.profilePictureUrl || './assets/profile-placeholder.jpg',
-        }));
+        this.activeUsers = users
+          .filter((user) => user.id !== this.currentUserId) 
+          .map((user) => ({
+            ...user,
+            avatar: user.profilePictureUrl || './assets/profile-placeholder.jpg',
+          }));
         console.log('Active users:', this.activeUsers);
       },
       (error) => {
@@ -87,6 +103,7 @@ export class ChatPage implements OnInit, OnDestroy {
       }
     );
   }
+  
 
   onSegmentChange(event: any) {
     this.segmentValue = event.detail.value;

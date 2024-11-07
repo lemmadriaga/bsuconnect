@@ -260,8 +260,8 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     this.selectedEvent = {
       title: eventClickInfo.event.title,
       date: eventClickInfo.event.start,
-      duration: eventClickInfo.event.extendedProps.duration, // Add duration
-      invited: eventClickInfo.event.extendedProps.invited, // Add invited
+      duration: eventClickInfo.event.extendedProps.duration, 
+      invited: eventClickInfo.event.extendedProps.invited, 
       location: eventClickInfo.event.extendedProps.location,
       description: eventClickInfo.event.extendedProps.description,
     };
@@ -352,7 +352,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       alert('Report marked as solved.');
       this.fetchReports();
 
-      // Notify user about solved report
+      
       this.reportService.notifyUserSolved(reportId);
     });
   }
@@ -436,7 +436,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   //           ...new Set(attendees.map((att) => att.department)),
   //         ];
 
-  //         // Call updateDepartmentChart with the loaded attendees
+  
   //         this.updateDepartmentChart(attendees);
   //       });
   //   }
@@ -454,10 +454,10 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
             ...new Set(attendees.map((att) => att.department)),
           ];
           this.uniqueSections = [
-            ...new Set(attendees.map((att) => att.section)), // Populate unique sections
+            ...new Set(attendees.map((att) => att.section)), 
           ];
 
-          // Update the department chart with the loaded attendees
+          
           this.updateDepartmentChart(attendees);
         });
     }
@@ -472,17 +472,17 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     const departments = Object.keys(departmentCounts);
     const counts = Object.values(departmentCounts);
 
-    // Get the canvas element
+    
     const ctx = document.getElementById(
       'attendeesDepartmentChart'
     ) as HTMLCanvasElement;
 
-    // Destroy previous chart if it exists
+    
     if (this.attendeesDepartmentChart) {
       this.attendeesDepartmentChart.destroy();
     }
 
-    // Initialize chart only if the canvas element is available
+    
     if (ctx) {
       this.attendeesDepartmentChart = new Chart(ctx, {
         type: 'pie',
@@ -551,7 +551,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       this.eventForm.time &&
       this.eventForm.thumbnailUrl
     ) {
-      // Ensure invited roles are in lowercase
+      
       this.eventForm.invited = this.eventForm.invited.map((role: string) =>
         role.toLowerCase()
       );
@@ -563,7 +563,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       eventDoc.set(this.eventForm, { merge: true }).then(() => {
         this.showEventForm = false;
         this.selectedEventId = null;
-        // Reset the form
+        
         this.eventForm = {
           title: '',
           date: '',

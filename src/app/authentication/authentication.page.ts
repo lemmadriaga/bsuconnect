@@ -79,10 +79,10 @@ export class AuthenticationPage implements AfterViewInit {
           department
         );
         if (user) {
-          await this.authService.sendVerificationEmail(); // Send verification email
+          await this.authService.sendVerificationEmail(); 
           loading.dismiss();
 
-          // Show verification alert
+          
           const alert = await this.alertCtrl.create({
             header: 'Verify Your Email',
             message:

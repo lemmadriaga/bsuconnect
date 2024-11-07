@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { FeedbackService } from 'src/app/feedback.service';
-import { FeedbackModalComponent } from 'src/app/components/feedback-modal/feedback-modal.component';
 import { ModalController } from '@ionic/angular';
 import { FcmService } from 'src/app/fcm.service';
 

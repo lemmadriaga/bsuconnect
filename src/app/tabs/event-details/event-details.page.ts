@@ -18,6 +18,7 @@ export class EventDetailsPage implements OnInit {
   userDepartment: string | null = null;
   userSection: string | null = null;
   isSectionValid: boolean = true;
+  isSectionLocked: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -52,6 +53,22 @@ export class EventDetailsPage implements OnInit {
     }
   }
 
+  // checkIfRegistered(eventId: string) {
+  //   if (this.userId) {
+  //     this.firestore
+  //       .collection('events')
+  //       .doc(eventId)
+  //       .collection('attendees')
+  //       .doc(this.userId)
+  //       .get()
+  //       .subscribe((doc) => {
+  //         this.isRegistered = doc.exists;
+  //         if (this.isRegistered) {
+  //           this.isAttended = doc.data()?.['status'] === 'Attended';
+  //         }
+  //       });
+  //   }
+  // }
   checkIfRegistered(eventId: string) {
     if (this.userId) {
       this.firestore
@@ -62,27 +79,26 @@ export class EventDetailsPage implements OnInit {
         .get()
         .subscribe((doc) => {
           this.isRegistered = doc.exists;
-          if (this.isRegistered) {
-            this.isAttended = doc.data()?.['status'] === 'Attended';
-          }
+          this.isAttended = doc.data()?.['status'] === 'Attended';
+          this.isSectionLocked = this.isRegistered;
+          console.log('isRegistered:', this.isRegistered, 'isAttended:', this.isAttended);
         });
     }
   }
   validateSection(value: string) {
-    const trimmedValue = value.trim(); // Remove any leading or trailing spaces
-    const regex = /^[A-Z0-9-]+$/; // Allow uppercase letters, numbers, and hyphens only
+    const trimmedValue = value.trim();
+    const regex = /^[A-Z0-9-]+$/;
     this.isSectionValid = regex.test(trimmedValue);
-    this.userSection = trimmedValue; // Update the userSection to trimmed and validated value
+    this.userSection = trimmedValue;
   }
   registerToEvent() {
-    // Validate section again in case it's modified directly
     if (
       !this.isRegistered &&
       this.userId &&
       this.userName &&
       this.userDepartment &&
       this.userSection &&
-      this.isSectionValid // Ensure section is valid
+      this.isSectionValid
     ) {
       const attendeeData = {
         name: this.userName,
@@ -99,6 +115,7 @@ export class EventDetailsPage implements OnInit {
         .set(attendeeData)
         .then(() => {
           this.isRegistered = true;
+          this.isSectionLocked = true; 
         })
         .catch((error) => console.error('Error registering attendee:', error));
     } else {
@@ -114,17 +131,30 @@ export class EventDetailsPage implements OnInit {
   //     today.getDate() === eventDate.getDate()
   //   );
   // }
+  // // isEventToday(): boolean {
+  // //   const today = new Date();
+  // //   const eventDate = new Date(this.event.date);
+  // //   const eventStart = new Date(eventDate.getTime());
+  // //   const eventEnd = new Date(
+  // //     eventDate.getTime() + this.event.duration * 60 * 60 * 1000
+  // //   );
+
+  // //   return today >= eventStart && today <= eventEnd;
+  // // }
   isEventToday(): boolean {
-    const today = new Date();
-    const eventDate = new Date(this.event.date);
-    const eventStart = new Date(eventDate.getTime());
-    const eventEnd = new Date(
-      eventDate.getTime() + this.event.duration * 60 * 60 * 1000
-    );
-
-    return today >= eventStart && today <= eventEnd;
+    if (!this.event || !this.event.date || !this.event.time || !this.event.duration) {
+      return false;
+    }
+  
+    const eventStart = new Date(`${this.event.date}T${this.event.time}`);
+    const eventEnd = new Date(eventStart.getTime() + this.event.duration * 60 * 60 * 1000);
+  
+    const now = new Date();
+    console.log('Event Start:', eventStart, 'Event End:', eventEnd, 'Now:', now);
+  
+    return now >= eventStart && now <= eventEnd;
   }
-
+  
   async checkLocationAndMarkAttendance() {
     if (
       navigator.geolocation &&

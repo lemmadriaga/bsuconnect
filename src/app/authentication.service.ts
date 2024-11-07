@@ -108,7 +108,7 @@ export class AuthenticationService {
             contact,
             role: 'student',
             department,
-            // Do not set createdAt here
+          
           };
 
           return this.firestore
@@ -151,7 +151,6 @@ export class AuthenticationService {
       .then(async (userCredential) => {
         const user = userCredential.user;
         if (user && user.emailVerified) {
-          // Check if email is verified
           await this.updateUserStatus(user.uid, true);
           await this.saveFCMToken(user.uid);
           return userCredential;
@@ -340,11 +339,11 @@ export class AuthenticationService {
       .valueChanges()
       .pipe(
         map((users: any[]) => {
-          const monthlyCounts = Array(12).fill(0); // Initialize an array for each month
+          const monthlyCounts = Array(12).fill(0); 
           users.forEach((user) => {
-            const createdAt = user.createdAt?.toDate(); // Convert Firestore Timestamp to Date
+            const createdAt = user.createdAt?.toDate(); 
             if (createdAt) {
-              const month = createdAt.getMonth(); // Get month index (0-11)
+              const month = createdAt.getMonth(); 
               monthlyCounts[month]++;
             }
           });

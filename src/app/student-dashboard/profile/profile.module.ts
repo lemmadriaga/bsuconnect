@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 import { ProfilePageRoutingModule } from './profile-routing.module';
-import { FeedbackModalComponent } from 'src/app/components/feedback-modal/feedback-modal.component';
+
 import { ProfilePage } from './profile.page';
 
 
@@ -16,7 +16,7 @@ import { ProfilePage } from './profile.page';
     IonicModule,
     ProfilePageRoutingModule
   ],
-  declarations: [ProfilePage, FeedbackModalComponent],
+  declarations: [ProfilePage],
 
 })
 export class ProfilePageModule {}

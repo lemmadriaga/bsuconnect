@@ -40,15 +40,15 @@ export class FeedbackModalPage {
     this.isSubmitting = true;
   
     try {
-      // Get the current user's ID
+      
       const user = await this.auth.currentUser;
       const userId = user ? user.uid : null;
   
       if (userId) {
-        // Fetch the user's full name from Firestore
+        
         const userDoc = await this.firestore.collection('users').doc(userId).get().toPromise();
         const userData = userDoc.data();
-        const userName = (userData as { fullName?: string })?.fullName || 'Anonymous'; // Use full name or default to 'Anonymous'
+        const userName = (userData as { fullName?: string })?.fullName || 'Anonymous'; 
   
         const feedbackData = {
           name: userName,
@@ -57,11 +57,11 @@ export class FeedbackModalPage {
           createdAt: new Date(),
         };
   
-        // Save feedback to Firestore
+        
         await this.firestore.collection('feedback').add(feedbackData);
         console.log('Feedback successfully saved in Firestore');
   
-        // Show thank you alert
+        
         const thankYouAlert = await this.alertController.create({
           header: 'Thank You!',
           message: 'Your feedback has been submitted successfully.',
@@ -69,7 +69,7 @@ export class FeedbackModalPage {
         });
         await thankYouAlert.present();
   
-        // Wait for the alert to be dismissed, then clear feedback, reset rating, and navigate
+        
         await thankYouAlert.onDidDismiss();
         this.feedback = '';
         this.rating = 0;
@@ -89,6 +89,6 @@ export class FeedbackModalPage {
   
   
   close() {
-    this.router.navigate(['profile']); // Change to your desired route
+    this.router.navigate(['profile']); 
   }
 }

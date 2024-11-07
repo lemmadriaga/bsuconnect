@@ -14,7 +14,7 @@ export class FeedbackService {
   constructor(
     private firestore: AngularFirestore,
     private authService: AuthenticationService,
-    private alertController: AlertController, // Inject AlertController
+    private alertController: AlertController, 
     private router: Router 
   ) {}
 
