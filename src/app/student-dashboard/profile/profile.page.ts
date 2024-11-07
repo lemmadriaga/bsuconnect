@@ -104,13 +104,8 @@ export class ProfilePage implements OnInit {
   }
 
   async openFeedback() {
-    const modal = await this.modalController.create({
-      component: FeedbackModalComponent,
-    });
-    await modal.present();
-
-    const { data } = await modal.onDidDismiss();
-    console.log('Modal dismissed with data:', data);
+    this.router.navigate(['/feedback-modal']);
+    console.log('Navigated to Feedback page');
   }
 
   // toggleNotifications() {

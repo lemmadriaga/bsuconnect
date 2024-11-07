@@ -16,6 +16,8 @@ export class EventDetailsPage implements OnInit {
   userId: string | null = null;
   userName: string | null = null;
   userDepartment: string | null = null;
+  userSection: string | null = null;
+  isSectionValid: boolean = true;
 
   constructor(
     private route: ActivatedRoute,
@@ -29,15 +31,12 @@ export class EventDetailsPage implements OnInit {
     if (eventId) {
       this.authService.getUserId().subscribe((id) => {
         this.userId = id;
-        console.log('User ID:', this.userId);
       });
       this.authService.getUserName().subscribe((name) => {
         this.userName = name;
-        console.log('User Name:', this.userName);
       });
       this.authService.getUserDepartment().subscribe((department) => {
         this.userDepartment = department;
-        console.log('User Department:', this.userDepartment);
       });
 
       this.firestore
@@ -48,8 +47,6 @@ export class EventDetailsPage implements OnInit {
           if (eventData && typeof eventData === 'object') {
             this.event = { ...(eventData as object), id: eventId };
             this.checkIfRegistered(eventId);
-          } else {
-            console.error('Event data is not an object:', eventData);
           }
         });
     }
@@ -71,17 +68,26 @@ export class EventDetailsPage implements OnInit {
         });
     }
   }
-
+  validateSection(value: string) {
+    const trimmedValue = value.trim(); // Remove any leading or trailing spaces
+    const regex = /^[A-Z0-9-]+$/; // Allow uppercase letters, numbers, and hyphens only
+    this.isSectionValid = regex.test(trimmedValue);
+    this.userSection = trimmedValue; // Update the userSection to trimmed and validated value
+  }
   registerToEvent() {
+    // Validate section again in case it's modified directly
     if (
       !this.isRegistered &&
       this.userId &&
       this.userName &&
-      this.userDepartment
+      this.userDepartment &&
+      this.userSection &&
+      this.isSectionValid // Ensure section is valid
     ) {
       const attendeeData = {
         name: this.userName,
         department: this.userDepartment,
+        section: this.userSection,
         status: 'Registered',
       };
 
@@ -93,22 +99,30 @@ export class EventDetailsPage implements OnInit {
         .set(attendeeData)
         .then(() => {
           this.isRegistered = true;
-          console.log('Attendee registered successfully.');
         })
         .catch((error) => console.error('Error registering attendee:', error));
     } else {
-      console.error('User data missing or already registered.');
+      console.error('Invalid section input or already registered.');
     }
   }
-
+  // isEventToday(): boolean {
+  //   const today = new Date();
+  //   const eventDate = new Date(this.event.date);
+  //   return (
+  //     today.getFullYear() === eventDate.getFullYear() &&
+  //     today.getMonth() === eventDate.getMonth() &&
+  //     today.getDate() === eventDate.getDate()
+  //   );
+  // }
   isEventToday(): boolean {
     const today = new Date();
     const eventDate = new Date(this.event.date);
-    return (
-      today.getFullYear() === eventDate.getFullYear() &&
-      today.getMonth() === eventDate.getMonth() &&
-      today.getDate() === eventDate.getDate()
+    const eventStart = new Date(eventDate.getTime());
+    const eventEnd = new Date(
+      eventDate.getTime() + this.event.duration * 60 * 60 * 1000
     );
+
+    return today >= eventStart && today <= eventEnd;
   }
 
   async checkLocationAndMarkAttendance() {

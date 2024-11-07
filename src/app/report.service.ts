@@ -59,4 +59,14 @@ export class ReportService {
   markReportAsSolved(reportId: string) {
     return this.firestore.collection('reports').doc(reportId).update({ solved: true });
   }
+
+  notifyUserSolved(reportId: string) {
+    return this.firestore
+      .collection('reports')
+      .doc(reportId)
+      .update({ userNotified: true });
+  }
+
+  
+  
 }

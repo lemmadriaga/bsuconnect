@@ -19,6 +19,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { HostListener } from '@angular/core';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { map } from 'rxjs/operators';
 
 interface TabItem {
   label: string;
@@ -32,6 +33,16 @@ interface TabItem {
   styleUrls: ['./admin-dashboard.page.scss'],
 })
 export class AdminDashboardPage implements OnInit, AfterViewInit {
+  monthlyRegistrationsChart: any;
+  selectedInvitedType: string = '';
+  filteredEvents: any[] = [];
+  uniqueSections: string[] = [];
+  selectedSection: string | null = null;
+  uniqueDepartments: string[] = [];
+  selectedDepartment: string | null = null;
+  selectedStatus: string | null = null;
+  selectedReport: any = null;
+  showReportDetailsModal: boolean = false;
   isSidebarVisible = true;
   isLargeScreen = window.innerWidth >= 1024;
   showEventDetailsModall = false;
@@ -53,6 +64,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     title: '',
     date: '',
     time: '',
+    duration: '',
     location: '',
     invited: [],
     description: '',
@@ -129,6 +141,9 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    this.loadMonthlyRegistrationChart();
+    this.loadEvents();
+    this.loadAttendeeDetails();
     this.loadEvents();
     this.initializeCalendar();
 
@@ -329,6 +344,9 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     this.reportService.markReportAsSolved(reportId).then(() => {
       alert('Report marked as solved.');
       this.fetchReports();
+
+      // Notify user about solved report
+      this.reportService.notifyUserSolved(reportId);
     });
   }
 
@@ -398,25 +416,46 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       });
     });
   }
+  // loadAttendeeDetails() {
+  //   if (this.selectedEventId) {
+  //     this.firestore
+  //       .collection('events')
+  //       .doc(this.selectedEventId)
+  //       .collection('attendees')
+  //       .valueChanges()
+  //       .subscribe((attendees: any[]) => {
+  //         this.attendeeList = attendees;
+  //         this.uniqueDepartments = [
+  //           ...new Set(attendees.map((att) => att.department)),
+  //         ];
 
+  //         // Call updateDepartmentChart with the loaded attendees
+  //         this.updateDepartmentChart(attendees);
+  //       });
+  //   }
+  // }
   loadAttendeeDetails() {
-    if (typeof this.selectedEventId === 'string' && this.selectedEventId) {
-      console.log('Loading attendees for event ID:', this.selectedEventId);
-
+    if (this.selectedEventId) {
       this.firestore
         .collection('events')
         .doc(this.selectedEventId)
         .collection('attendees')
         .valueChanges()
         .subscribe((attendees: any[]) => {
-          console.log('Fetched Attendees:', attendees);
           this.attendeeList = attendees;
+          this.uniqueDepartments = [
+            ...new Set(attendees.map((att) => att.department)),
+          ];
+          this.uniqueSections = [
+            ...new Set(attendees.map((att) => att.section)), // Populate unique sections
+          ];
+
+          // Update the department chart with the loaded attendees
           this.updateDepartmentChart(attendees);
         });
-    } else {
-      console.error('Invalid selectedEventId:', this.selectedEventId);
     }
   }
+
   updateDepartmentChart(attendees: any[]) {
     const presentAttendees = attendees.filter(
       (attendee) => attendee.status === 'present'
@@ -426,40 +465,47 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     const departments = Object.keys(departmentCounts);
     const counts = Object.values(departmentCounts);
 
+    // Get the canvas element
     const ctx = document.getElementById(
       'attendeesDepartmentChart'
     ) as HTMLCanvasElement;
 
+    // Destroy previous chart if it exists
     if (this.attendeesDepartmentChart) {
       this.attendeesDepartmentChart.destroy();
     }
 
-    this.attendeesDepartmentChart = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: departments,
-        datasets: [
-          {
-            data: counts,
-            backgroundColor: [
-              '#3498db',
-              '#e74c3c',
-              '#f39c12',
-              '#2ecc71',
-              '#9b59b6',
-            ],
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'top',
+    // Initialize chart only if the canvas element is available
+    if (ctx) {
+      this.attendeesDepartmentChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: departments,
+          datasets: [
+            {
+              data: counts,
+              backgroundColor: [
+                '#3498db',
+                '#e74c3c',
+                '#f39c12',
+                '#2ecc71',
+                '#9b59b6',
+              ],
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
           },
         },
-      },
-    });
+      });
+    } else {
+      console.error('Canvas element for attendeesDepartmentChart not found');
+    }
   }
 
   private countAttendeesByDepartment(attendees: any[]) {
@@ -498,21 +544,24 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       this.eventForm.time &&
       this.eventForm.thumbnailUrl
     ) {
+      // Ensure invited roles are in lowercase
       this.eventForm.invited = this.eventForm.invited.map((role: string) =>
         role.toLowerCase()
       );
 
       const eventDoc = this.selectedEventId
-        ? this.firestore.collection('events').doc(this.selectedEventId) 
-        : this.firestore.collection('events').doc(); 
+        ? this.firestore.collection('events').doc(this.selectedEventId)
+        : this.firestore.collection('events').doc();
 
       eventDoc.set(this.eventForm, { merge: true }).then(() => {
         this.showEventForm = false;
         this.selectedEventId = null;
+        // Reset the form
         this.eventForm = {
           title: '',
           date: '',
           time: '',
+          duration: null,
           location: '',
           invited: [],
           description: '',
@@ -520,12 +569,13 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
           latitude: 0,
           longitude: 0,
         };
-        this.loadEvents(); 
+        this.loadEvents();
       });
     } else {
       alert('Please complete all required fields.');
     }
   }
+
   initializeMapWithDelay() {
     if (this.map) {
       this.map.remove();
@@ -611,36 +661,56 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   toggleSidebar() {
     this.isSidebarVisible = !this.isSidebarVisible;
   }
-
+  filterEvents() {
+    if (this.selectedInvitedType) {
+      this.filteredEvents = this.events.filter((event) =>
+        event.invited.includes(this.selectedInvitedType)
+      );
+    } else {
+      this.filteredEvents = [...this.events];
+    }
+  }
   downloadPDF() {
     const doc = new jsPDF();
     doc.text('Event Attendees', 10, 10);
 
-    
-    const headers = [['Name', 'Department', 'Status']];
+    const headers = [['Name', 'Department', 'Section', 'Status']];
 
-    
-    const data = this.attendeeList.map((attendee) => [
+    const filteredAttendees = this.attendeeList.filter((attendee) => {
+      const matchesDepartment = this.selectedDepartment
+        ? attendee.department === this.selectedDepartment
+        : true;
+      const matchesSection = this.selectedSection
+        ? attendee.section === this.selectedSection
+        : true;
+      const matchesStatus = this.selectedStatus
+        ? (this.selectedStatus === 'registered' &&
+            attendee.status === 'Registered') ||
+          (this.selectedStatus === 'present' && attendee.status === 'Present')
+        : true;
+      return matchesDepartment && matchesSection && matchesStatus;
+    });
+
+    const data = filteredAttendees.map((attendee) => [
       attendee.name,
       attendee.department,
+      attendee.section,
       attendee.status,
     ]);
 
-    
     doc.autoTable({
       head: headers,
       body: data,
       startY: 20,
     });
 
-    
     doc.save('Event_Attendees.pdf');
   }
 
   editEvent(event: any) {
     this.eventForm = {
-      ...event, 
-      invited: [...event.invited], 
+      ...event,
+      invited: [...event.invited],
     };
     this.selectedEventId = event.id;
     this.showEventForm = true;
@@ -650,30 +720,63 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       confirm('Are you sure you want to delete this event and its attendees?')
     ) {
       try {
-        
         const attendeesRef = this.firestore.collection(
           `events/${eventId}/attendees`
         );
 
-        
         const attendeesSnapshot = await attendeesRef.get().toPromise();
-        const batch = this.firestore.firestore.batch(); 
+        const batch = this.firestore.firestore.batch();
 
         attendeesSnapshot.forEach((doc) => {
-          batch.delete(doc.ref); 
+          batch.delete(doc.ref);
         });
 
-        await batch.commit(); 
+        await batch.commit();
 
-        
         await this.firestore.collection('events').doc(eventId).delete();
         alert('Event and its attendees deleted successfully');
 
-        
         this.loadEvents();
       } catch (error) {
         console.error('Error deleting event and attendees:', error);
       }
     }
+  }
+  viewReportDetails(report: any) {
+    this.selectedReport = report;
+    this.showReportDetailsModal = true;
+  }
+
+  closeReportDetailsModal() {
+    this.showReportDetailsModal = false;
+    this.selectedReport = null;
+  }
+  loadMonthlyRegistrationChart() {
+    this.authService.getMonthlyRegistrationCounts().subscribe(monthlyCounts => {
+      const ctx = document.getElementById('monthlyRegistrationsChart') as HTMLCanvasElement;
+      this.monthlyRegistrationsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+          ],
+          datasets: [{
+            label: 'User Registrations',
+            data: monthlyCounts,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true }
+          },
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    });
   }
 }

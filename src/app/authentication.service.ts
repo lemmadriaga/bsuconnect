@@ -40,6 +40,55 @@ export class AuthenticationService {
     });
   }
 
+  // registerUser(
+  //   email: string,
+  //   password: string,
+  //   fullName: string,
+  //   contact: string,
+  //   department: string
+  // ): Promise<any> {
+  //   return this.afAuth
+  //     .createUserWithEmailAndPassword(email, password)
+  //     .then((userCredential) => {
+  //       const user = userCredential.user;
+  //       if (user) {
+  //         const userData = {
+  //           uid: user.uid,
+  //           email,
+  //           fullName,
+  //           contact,
+  //           role: 'student',
+  //           department,
+  //           createdAt: new Date()
+  //         };
+
+  //         return this.firestore
+  //           .collection('users')
+  //           .doc(user.uid)
+  //           .set(userData)
+  //           .then(() => {
+  //             return this.firestore
+  //               .collection('userStatus')
+  //               .doc(user.uid)
+  //               .set({
+  //                 uid: user.uid,
+  //                 online: false,
+  //                 lastActive: new Date(),
+  //               })
+  //               .then(async () => {
+  //                 await this.saveFCMToken(user.uid);
+  //                 return userData;
+  //               });
+  //           });
+  //       } else {
+  //         throw new Error('User creation failed');
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error during registration:', error);
+  //       throw error;
+  //     });
+  // }
   registerUser(
     email: string,
     password: string,
@@ -59,25 +108,29 @@ export class AuthenticationService {
             contact,
             role: 'student',
             department,
+            // Do not set createdAt here
           };
 
           return this.firestore
             .collection('users')
             .doc(user.uid)
-            .set(userData)
+            .set(
+              {
+                ...userData,
+                createdAt: new Date(),
+              },
+              { merge: true }
+            )
             .then(() => {
-              return this.firestore
-                .collection('userStatus')
-                .doc(user.uid)
-                .set({
-                  uid: user.uid,
-                  online: false,
-                  lastActive: new Date(),
-                })
-                .then(async () => {
-                  await this.saveFCMToken(user.uid);
-                  return userData;
-                });
+              return this.firestore.collection('userStatus').doc(user.uid).set({
+                uid: user.uid,
+                online: false,
+                lastActive: new Date(),
+              });
+            })
+            .then(async () => {
+              await this.saveFCMToken(user.uid);
+              return userData;
             });
         } else {
           throw new Error('User creation failed');
@@ -280,5 +333,23 @@ export class AuthenticationService {
     } else {
       throw new Error('No user is currently logged in');
     }
+  }
+  getMonthlyRegistrationCounts(): Observable<number[]> {
+    return this.firestore
+      .collection('users')
+      .valueChanges()
+      .pipe(
+        map((users: any[]) => {
+          const monthlyCounts = Array(12).fill(0); // Initialize an array for each month
+          users.forEach((user) => {
+            const createdAt = user.createdAt?.toDate(); // Convert Firestore Timestamp to Date
+            if (createdAt) {
+              const month = createdAt.getMonth(); // Get month index (0-11)
+              monthlyCounts[month]++;
+            }
+          });
+          return monthlyCounts;
+        })
+      );
   }
 }

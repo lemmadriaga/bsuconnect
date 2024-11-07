@@ -39,6 +39,13 @@
         </div>
 
         <div class="flex items-center text-gray-600">
+          <ion-icon name="hourglass-outline" class="mr-2 text-lg"></ion-icon>
+          <p class="text-sm">
+            <strong>Duration:</strong> {{ event.duration }} hours
+          </p>
+        </div>
+
+        <div class="flex items-center text-gray-600">
           <ion-icon name="location-outline" class="mr-2 text-lg"></ion-icon>
           <p class="text-sm"><strong>Location:</strong> {{ event.location }}</p>
         </div>
@@ -55,8 +62,24 @@
       </div>
 
       <div class="mt-6 text-center">
+        <div class="mt-4">
+          <label class="block text-gray-600 mb-2 font-medium">Section</label>
+          <ion-input
+            [(ngModel)]="userSection"
+            name="section"
+            placeholder="Enter your section"
+            required
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
+            (ngModelChange)="validateSection($event)"
+          ></ion-input>
+          <p *ngIf="!isSectionValid" class="text-red-500 text-sm mt-1">
+            Section must be in uppercase letters with no spaces.
+          </p>
+        </div>
+        
         <ion-button
           *ngIf="!isRegistered"
+          [disabled]="!isSectionValid || !userSection" 
           (click)="registerToEvent()"
           expand="block"
           color="danger"

@@ -75,6 +75,12 @@
             <h3 class="text-lg font-semibold mb-4">User Ratings</h3>
             <canvas id="ratingsChart"></canvas>
           </div>
+          <div class="bg-white rounded-lg shadow p-6 mt-6">
+            <h3 class="text-lg font-semibold mb-4">
+              Monthly User Registrations
+            </h3>
+            <canvas id="monthlyRegistrationsChart"></canvas>
+          </div>
 
           <!-- Department Distribution Chart -->
           <div class="bg-white rounded-lg shadow p-6 chart-container">
@@ -173,13 +179,22 @@
         <ion-button color="danger" (click)="openEventForm()"
           >Create an Event</ion-button
         >
+        <div class="flex space-x-2 items-center">
+          <label class="text-gray-600 font-semibold">Filter by Invited:</label>
+          <select [(ngModel)]="selectedInvitedType" (change)="filterEvents()">
+            <option value="">All</option>
+            <option value="student">Student</option>
+            <option value="alumni">Alumni</option>
+            <option value="faculty">Faculty</option>
+          </select>
+        </div>
 
         <div
           *ngIf="!showEventForm"
           class="event-list mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           <div
-            *ngFor="let event of events"
+            *ngFor="let event of filteredEvents"
             class="bg-white rounded-lg shadow-lg p-6"
           >
             <img
@@ -189,8 +204,8 @@
             />
             <h3 class="text-lg font-bold mb-2">{{ event.title }}</h3>
             <p class="text-gray-600 text-sm mb-2">
-              <strong>Date:</strong> {{ convertToDate(event.date) | date: 'mediumDate' }}
-
+              <strong>Date:</strong> {{ convertToDate(event.date) | date:
+              'mediumDate' }}
             </p>
             <p class="text-gray-600 text-sm mb-2">
               <strong>Time:</strong> {{ event.time }}
@@ -274,6 +289,18 @@
                   required
                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
                 />
+              </div>
+              <div>
+                <label class="block text-gray-600 mb-2 font-medium"
+                  >Event Duration (hours)</label
+                >
+                <ion-input
+                  type="number"
+                  [(ngModel)]="eventForm.duration"
+                  name="duration"
+                  required
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
+                ></ion-input>
               </div>
             </div>
 
@@ -416,7 +443,7 @@
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
       >
         <div
-          class="bg-white w-full max-w-md h-auto p-4 rounded-lg shadow-lg relative overflow-y-auto"
+          class="bg-white w-full max-w-lg h-auto p-4 rounded-lg shadow-lg relative overflow-y-auto"
           style="max-height: 60vh"
         >
           <div class="flex justify-between items-center mb-4">
@@ -425,12 +452,52 @@
               >Close</ion-button
             >
           </div>
-
-          <!-- Download PDF Button -->
-          <div class="flex justify-end mb-4">
-            <ion-button color="danger" (click)="downloadPDF()"
-              >Download PDF</ion-button
+          <div class="flex space-x-4 mb-4">
+            <ion-select
+              placeholder="Filter by Department"
+              [(ngModel)]="selectedDepartment"
             >
+              <ion-select-option *ngFor="let dept of uniqueDepartments"
+                >{{ dept }}</ion-select-option
+              >
+            </ion-select>
+
+            <ion-select
+              placeholder="Filter by Section"
+              [(ngModel)]="selectedSection"
+            >
+              <ion-select-option *ngFor="let section of uniqueSections"
+                >{{ section }}</ion-select-option
+              >
+            </ion-select>
+
+            <!-- <ion-select
+              placeholder="Filter by Status"
+              [(ngModel)]="selectedStatus"
+            >
+              <ion-select-option value="present">Present</ion-select-option>
+              <ion-select-option value="registered"
+                >Registered</ion-select-option
+              >
+            </ion-select> -->
+          </div>
+          <div class="flex justify-between items-center mb-4">
+            <!-- Filter by Status Dropdown -->
+            <ion-select
+              placeholder="Filter by Status"
+              [(ngModel)]="selectedStatus"
+              class="mr-4"
+            >
+              <ion-select-option value="present">Present</ion-select-option>
+              <ion-select-option value="registered"
+                >Registered</ion-select-option
+              >
+            </ion-select>
+
+            <!-- Download PDF Button -->
+            <ion-button color="danger" (click)="downloadPDF()">
+              Download PDF
+            </ion-button>
           </div>
 
           <!-- Attendee List Table -->
@@ -439,6 +506,7 @@
               <tr>
                 <th class="p-2 text-left">Name</th>
                 <th class="p-2 text-left">Department</th>
+                <th class="p-2 text-left">Section</th>
                 <th class="p-2 text-left">Status</th>
               </tr>
             </thead>
@@ -449,6 +517,9 @@
                 </td>
                 <td class="p-2 border-b border-gray-200">
                   {{ attendee.department }}
+                </td>
+                <td class="p-2 border-b border-gray-200">
+                  {{ attendee.section }}
                 </td>
                 <td class="p-2 border-b border-gray-200">
                   {{ attendee.status }}
@@ -491,6 +562,7 @@
                 alt="Report Image"
                 class="w-full h-32 object-cover rounded-lg mb-2"
               />
+
               <div class="flex justify-end">
                 <ion-button
                   *ngIf="!report.solved"
@@ -519,6 +591,38 @@
         <ng-template #noReports>
           <p class="text-gray-500">No reports available.</p>
         </ng-template>
+      </div>
+      <div
+        *ngIf="showReportDetailsModal"
+        class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+        (click)="closeReportDetailsModal()"
+      >
+        <div
+          class="relative bg-white rounded-lg shadow-lg p-6 max-w-lg w-full"
+          (click)="$event.stopPropagation()"
+        >
+          <button
+            class="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
+            (click)="closeReportDetailsModal()"
+          >
+            ×
+          </button>
+          <h4 class="text-lg font-semibold mb-2">
+            {{ selectedReport?.title }}
+          </h4>
+          <p class="mb-2">
+            <strong>From:</strong> {{ selectedReport?.userName || 'Anonymous' }}
+          </p>
+          <p class="mb-4">
+            <strong>Description:</strong> {{ selectedReport?.description }}
+          </p>
+          <img
+            *ngIf="selectedReport?.imageUrl"
+            [src]="selectedReport.imageUrl"
+            alt="Report Image"
+            class="w-full h-48 object-cover rounded-lg"
+          />
+        </div>
       </div>
     </div>
   </div>

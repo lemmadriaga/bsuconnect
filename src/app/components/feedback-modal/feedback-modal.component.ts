@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 export class FeedbackModalComponent {
   feedback: string = '';
   rating: number = 0;
+  isSubmitting: boolean = false;
 
   constructor(
     private modalController: ModalController,
@@ -29,23 +30,26 @@ export class FeedbackModalComponent {
   }
 
   async submitFeedback() {
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
+  
     if (this.feedback && this.rating) {
       try {
-        console.log('Feedback Submitted');
-        await this.showThankYouAlert();
-
         await this.feedbackService.saveFeedback(this.feedback, this.rating);
-
+        console.log('Feedback saved, dismissing modal before alert');
         await this.modalController.dismiss({ dismissed: true });
-        console.log('Modal dismissed');
+        await this.showThankYouAlert();
       } catch (error) {
         console.error('Error submitting feedback:', error);
+      } finally {
+        this.isSubmitting = false;
       }
     } else {
       console.warn('Feedback or rating is missing');
+      this.isSubmitting = false;
     }
   }
-
+  
   async showThankYouAlert() {
     const alert = await this.alertController.create({
       header: 'Thank You!',
@@ -59,8 +63,8 @@ export class FeedbackModalComponent {
         },
       ],
     });
-
+  
     await alert.present();
-    this.close();
   }
+  
 }

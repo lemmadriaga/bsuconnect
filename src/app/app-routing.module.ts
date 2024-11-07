@@ -79,6 +79,16 @@ const routes: Routes = [
     loadChildren: () =>
       import('./splash/splash.module').then((m) => m.SplashPageModule),
   },
+  {
+    path: 'feedback-modal',
+    loadChildren: () => import('./feedback-modal/feedback-modal.module').then( m => m.FeedbackModalPageModule)
+  },
+  {
+    path: 'profile',
+    loadChildren: () => import('./student-dashboard/profile/profile.module').then( m => m.ProfilePageModule)
+  },
+
+
 ];
 
 @NgModule({
