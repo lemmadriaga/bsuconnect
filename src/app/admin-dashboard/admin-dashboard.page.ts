@@ -221,12 +221,12 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       .subscribe((events) => {
         const calendarEvents = events.map((e) => {
           const data: any = e.payload.doc.data();
-          const start = new Date(`${data.date}T${data.time}`); // Combine date and time
+          const start = new Date(`${data.date}T${data.time}`); 
 
           return {
             id: e.payload.doc.id,
             title: data.title,
-            start: start, // Now includes both date and time
+            start: start, 
             extendedProps: {
               time: data.time,
               location: data.location,
@@ -260,8 +260,8 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     this.selectedEvent = {
       title: eventClickInfo.event.title,
       date: eventClickInfo.event.start,
-      duration: eventClickInfo.event.extendedProps.duration, 
-      invited: eventClickInfo.event.extendedProps.invited, 
+      duration: eventClickInfo.event.extendedProps.duration,
+      invited: eventClickInfo.event.extendedProps.invited,
       location: eventClickInfo.event.extendedProps.location,
       description: eventClickInfo.event.extendedProps.description,
     };
@@ -352,7 +352,6 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       alert('Report marked as solved.');
       this.fetchReports();
 
-      
       this.reportService.notifyUserSolved(reportId);
     });
   }
@@ -436,7 +435,6 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   //           ...new Set(attendees.map((att) => att.department)),
   //         ];
 
-  
   //         this.updateDepartmentChart(attendees);
   //       });
   //   }
@@ -454,10 +452,9 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
             ...new Set(attendees.map((att) => att.department)),
           ];
           this.uniqueSections = [
-            ...new Set(attendees.map((att) => att.section)), 
+            ...new Set(attendees.map((att) => att.section)),
           ];
 
-          
           this.updateDepartmentChart(attendees);
         });
     }
@@ -472,17 +469,14 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     const departments = Object.keys(departmentCounts);
     const counts = Object.values(departmentCounts);
 
-    
     const ctx = document.getElementById(
       'attendeesDepartmentChart'
     ) as HTMLCanvasElement;
 
-    
     if (this.attendeesDepartmentChart) {
       this.attendeesDepartmentChart.destroy();
     }
 
-    
     if (ctx) {
       this.attendeesDepartmentChart = new Chart(ctx, {
         type: 'pie',
@@ -551,7 +545,6 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       this.eventForm.time &&
       this.eventForm.thumbnailUrl
     ) {
-      
       this.eventForm.invited = this.eventForm.invited.map((role: string) =>
         role.toLowerCase()
       );
@@ -563,7 +556,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       eventDoc.set(this.eventForm, { merge: true }).then(() => {
         this.showEventForm = false;
         this.selectedEventId = null;
-        
+
         this.eventForm = {
           title: '',
           date: '',
@@ -668,15 +661,30 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   toggleSidebar() {
     this.isSidebarVisible = !this.isSidebarVisible;
   }
+  // filterEvents() {
+  //   if (this.selectedInvitedType) {
+  //     this.filteredEvents = this.events.filter((event) =>
+  //       event.invited.includes(this.selectedInvitedType)
+  //     );
+  //   } else {
+  //     this.filteredEvents = [...this.events];
+  //   }
+  // }
+
   filterEvents() {
     if (this.selectedInvitedType) {
-      this.filteredEvents = this.events.filter((event) =>
-        event.invited.includes(this.selectedInvitedType)
+      this.filteredEvents = this.events.filter(
+        (event) =>
+          event.invited.includes(this.selectedInvitedType) &&
+          !event.invited.includes('alumni')
       );
     } else {
-      this.filteredEvents = [...this.events];
+      this.filteredEvents = this.events.filter(
+        (event) => !event.invited.includes('alumni')
+      );
     }
   }
+
   downloadPDF() {
     const doc = new jsPDF();
     doc.text('Event Attendees', 10, 10);
@@ -684,17 +692,18 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     const headers = [['Name', 'Department', 'Section', 'Status']];
 
     const filteredAttendees = this.attendeeList.filter((attendee) => {
-      const matchesDepartment = this.selectedDepartment
-        ? attendee.department === this.selectedDepartment
-        : true;
-      const matchesSection = this.selectedSection
-        ? attendee.section === this.selectedSection
-        : true;
-      const matchesStatus = this.selectedStatus
-        ? (this.selectedStatus === 'registered' &&
-            attendee.status === 'Registered') ||
-          (this.selectedStatus === 'present' && attendee.status === 'Present')
-        : true;
+      const matchesDepartment =
+        !this.selectedDepartment ||
+        attendee.department === this.selectedDepartment;
+      const matchesSection =
+        !this.selectedSection || attendee.section === this.selectedSection;
+      const matchesStatus =
+        !this.selectedStatus ||
+        (this.selectedStatus === 'registered' &&
+          attendee.status.toLowerCase() === 'registered') ||
+        (this.selectedStatus === 'present' &&
+          attendee.status.toLowerCase() === 'present');
+
       return matchesDepartment && matchesSection && matchesStatus;
     });
 
@@ -704,6 +713,11 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       attendee.section,
       attendee.status,
     ]);
+
+    if (data.length === 0) {
+      alert('No attendees match the selected filters.');
+      return;
+    }
 
     doc.autoTable({
       head: headers,

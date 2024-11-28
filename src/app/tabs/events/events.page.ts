@@ -24,13 +24,24 @@ export class EventsPage implements OnInit {
         .collection('events')
         .snapshotChanges()
         .subscribe((events) => {
+          const currentTime = new Date().getTime();
+
           this.events = events
             .map((event) => {
               const data = event.payload.doc.data() as { [key: string]: any };
               const id = event.payload.doc.id;
-              return { id, ...data };
+
+              const eventDate = new Date(data['date'] + 'T' + data['time']);
+              const durationInMs = (data['duration'] || 0) * 60 * 60 * 1000;
+              const eventEndTime = eventDate.getTime() + durationInMs;
+
+              if (currentTime < eventEndTime) {
+                return { id, ...data };
+              }
+
+              return null;
             })
-            .filter((event: any) => event.invited.includes(role));
+            .filter((event: any) => event && event.invited.includes(role));
 
           console.log('Filtered events:', this.events);
         });

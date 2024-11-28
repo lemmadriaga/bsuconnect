@@ -73,6 +73,12 @@
             (ngModelChange)="validateSection($event)"
             [disabled]="isSectionLocked"
           ></ion-input>
+          <p class="text-gray-500 text-sm mt-1">
+            <em
+              >* Input must be in uppercase letters with no spaces (e.g.,
+              BSIT-4102).</em
+            >
+          </p>
           <p *ngIf="!isSectionValid" class="text-red-500 text-sm mt-1">
             Section must be in uppercase letters with no spaces.
           </p>

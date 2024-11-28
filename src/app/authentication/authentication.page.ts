@@ -72,6 +72,7 @@ export class AuthenticationPage implements AfterViewInit {
 
       try {
         const user = await this.authService.registerUser(
+          
           email,
           password,
           fullName,
@@ -79,10 +80,8 @@ export class AuthenticationPage implements AfterViewInit {
           department
         );
         if (user) {
-          await this.authService.sendVerificationEmail(); 
+          await this.authService.sendVerificationEmail();
           loading.dismiss();
-
-          
           const alert = await this.alertCtrl.create({
             header: 'Verify Your Email',
             message:
@@ -90,6 +89,7 @@ export class AuthenticationPage implements AfterViewInit {
             buttons: ['OK'],
           });
           await alert.present();
+          this.regForm.reset();
         }
       } catch (error) {
         console.error('Registration error:', error);
@@ -140,6 +140,7 @@ export class AuthenticationPage implements AfterViewInit {
             this.errorMessage = 'No role found';
             await this.router.navigate(['/authentication']);
           }
+          this.loginForm.reset();
         } else {
           this.errorMessage = 'Please check your email and password';
         }
