@@ -13,7 +13,6 @@ and various tools tailored to enhance the academic community experience.
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
-- [License](#license)
 - [Contact](#contact)
 
 ---
@@ -93,11 +92,7 @@ Contributions are welcome! Please open a pull request with a clear description o
 
 ---
 
-## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
 
 ## 📬 Contact
 
