@@ -75,15 +75,140 @@
             <h3 class="text-lg font-semibold mb-4">User Ratings</h3>
             <canvas id="ratingsChart"></canvas>
           </div>
-          <div class="bg-white rounded-lg shadow p-6 mt-6">
+
+          <!-- Monthly User Registrations Chart -->
+          <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold mb-4">
               Monthly User Registrations
             </h3>
             <canvas id="monthlyRegistrationsChart"></canvas>
           </div>
 
+          <!-- Event Analytics Chart -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Event Analytics Chart</h3>
+            <canvas id="eventChart"></canvas>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Next Event Predictions</h3>
+            <!-- Grid Layout for Two Side-by-Side Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Predicted Registrations -->
+              <div
+                class="flex flex-col items-center justify-center bg-gray-100 rounded-lg p-6 shadow hover:shadow-lg transition duration-300"
+              >
+                <h4 class="text-gray-600 text-lg font-semibold mb-2">
+                  Predicted Registrations
+                </h4>
+                <p
+                  class="text-5xl font-bold text-red-700"
+                  *ngIf="predictedRegistrations !== 0; else noData"
+                >
+                  {{ predictedRegistrations }}
+                </p>
+              </div>
+
+              <!-- Predicted Attendees -->
+              <div
+                class="flex flex-col items-center justify-center bg-gray-100 rounded-lg p-6 shadow hover:shadow-lg transition duration-300"
+              >
+                <h4 class="text-gray-600 text-lg font-semibold mb-2">
+                  Predicted Attendees
+                </h4>
+                <p
+                  class="text-5xl font-bold text-red-700"
+                  *ngIf="predictedAttendees !== 0; else noData"
+                >
+                  {{ predictedAttendees }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Calculation Details -->
+            <div class="mt-6">
+              <h4 class="text-lg font-semibold mb-2">Calculation Details</h4>
+              <ul class="text-gray-600 text-sm space-y-2">
+                <li>
+                  <strong>Average Registration Growth Rate:</strong>
+                  {{ averageRegistrationGrowthRate | percent: '1.2-2' }}
+                </li>
+                <li>
+                  <strong>Average Attendee Growth Rate:</strong>
+                  {{ averageAttendeeGrowthRate | percent: '1.2-2' }}
+                </li>
+                <li>
+                  <strong>Last Event Registrations:</strong> {{
+                  lastRegistrations }}
+                </li>
+                <li>
+                  <strong>Last Event Attendees:</strong> {{ lastAttendees }}
+                </li>
+              </ul>
+              <p class="text-gray-500 text-sm mt-4">
+                <em
+                  >*Predictions are based on historical data using calculated
+                  growth rates.</em
+                >
+              </p>
+            </div>
+          </div>
+
+          <!-- No Data Template -->
+          <ng-template #noData>
+            <p class="text-gray-400 text-lg">Not Available</p>
+          </ng-template>
+
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Recent Events</h3>
+            <div class="overflow-y-auto max-h-96 space-y-4">
+              <!-- Event List -->
+              <div
+                *ngFor="let event of sortedEvents"
+                class="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg hover:shadow-md transition-shadow duration-200"
+              >
+                <!-- Event Thumbnail -->
+                <img
+                  [src]="event.thumbnailUrl || 'assets/default-thumbnail.png'"
+                  alt="Event Thumbnail"
+                  class="w-20 h-20 object-cover rounded-lg"
+                />
+                <!-- Event Details -->
+                <div class="flex-1">
+                  <h4 class="text-gray-800 font-semibold text-lg">
+                    {{ event.title }}
+                  </h4>
+                  <p class="text-gray-500 text-sm">
+                    {{ event.date | date: 'mediumDate' }}
+                  </p>
+                  <p class="text-gray-500 text-sm">
+                    {{ event.location || 'Location not provided' }}
+                  </p>
+                </div>
+                <!-- View Details Button -->
+                <ion-button
+                  color="danger"
+                  fill="outline"
+                  size="small"
+                  (click)="viewEventDetails(event.id)"
+                >
+                  View Details
+                </ion-button>
+              </div>
+
+              <!-- No Events Placeholder -->
+              <div
+                *ngIf="sortedEvents.length === 0"
+                class="text-gray-500 text-center mt-4"
+              >
+                No events available.
+              </div>
+            </div>
+          </div>
+
+          <!-- Event Analytics Rankings with Sticky Title -->
+
           <!-- Department Distribution Chart -->
-          <div class="bg-white rounded-lg shadow p-6 chart-container">
+          <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold mb-4">Users per Department</h3>
             <canvas id="departmentChart"></canvas>
           </div>
@@ -121,9 +246,9 @@
             <!-- Pagination Controls -->
             <div class="flex justify-center mt-4 space-x-2">
               <ion-button
-                *ngFor="let page of totalPages"
-                (click)="goToPage(page)"
-                [fill]="currentPage === page ? 'solid' : 'outline'"
+                *ngFor="let page of feedbackTotalPages"
+                (click)="goToFeedbackPage(page)"
+                [fill]="feedbackCurrentPage === page ? 'solid' : 'outline'"
               >
                 {{ page }}
               </ion-button>
@@ -174,8 +299,6 @@
           </p>
         </div>
       </div>
-
-      >
 
       <!-- Events Management -->
       <div *ngIf="currentTab === 'Events'" class="space-y-6">
@@ -582,12 +705,11 @@
           <!-- Pagination Controls -->
           <div class="flex justify-center mt-4 space-x-2">
             <ion-button
-              *ngFor="let page of totalPages"
-              (click)="goToPage(page)"
-              [fill]="currentPage === page ? 'solid' : 'outline'"
+              *ngFor="let page of reportTotalPages"
+              (click)="goToReportPage(page)"
+              [fill]="reportCurrentPage === page ? 'solid' : 'outline'"
+              >{{ page }}</ion-button
             >
-              {{ page }}
-            </ion-button>
           </div>
         </div>
         <ng-template #noReports>
@@ -626,6 +748,38 @@
           />
         </div>
       </div>
+    </div>
+  </div>
+  <!-- Dashboard Event Details Modal -->
+  <div
+    *ngIf="showDashboardEventDetailsModal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+  >
+    <div
+      class="bg-white w-full max-w-lg h-auto p-4 rounded-lg shadow-lg relative overflow-y-auto"
+    >
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold">{{ selectedDashboardEvent?.title }}</h2>
+        <ion-button fill="clear" (click)="closeDashboardEventDetailsModal()"
+          >Close</ion-button
+        >
+      </div>
+      <p>
+        <strong>Date:</strong> {{ selectedDashboardEvent?.date | date: 'medium'
+        }}
+      </p>
+      <p>
+        <strong>Time:</strong> {{ selectedDashboardEvent?.time || 'No time
+        specified' }}
+      </p>
+      <p>
+        <strong>Location:</strong> {{ selectedDashboardEvent?.location || 'No
+        location provided' }}
+      </p>
+      <p>
+        <strong>Description:</strong> {{ selectedDashboardEvent?.description ||
+        'No description available' }}
+      </p>
     </div>
   </div>
 </ion-content>

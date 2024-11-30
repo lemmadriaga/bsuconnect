@@ -435,7 +435,6 @@
     overflow-y: visible;
   }
 
-
   .modal-overlay2 {
     position: fixed;
     top: 0;
@@ -448,7 +447,7 @@
     justify-content: center;
     z-index: 1050;
   }
-  
+
   .modal-container2 {
     position: relative;
     max-width: 90%;
@@ -459,7 +458,7 @@
     overflow: hidden;
     padding: 20px;
   }
-  
+
   .close-icon2 {
     position: absolute;
     top: 10px;
@@ -468,5 +467,38 @@
     cursor: pointer;
     color: #333;
     transition: color 0.3s;
+  }
+}
+.max-h-96 {
+  max-height: 24rem;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
+.space-y-4 > * + * {
+  margin-top: 1rem;
+}
+
+.hover\:shadow-md:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* New Modal Styling */
+.modal-content {
+  max-width: 600px;
+  border-radius: 10px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }

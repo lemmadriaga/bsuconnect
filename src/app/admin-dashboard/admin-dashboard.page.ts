@@ -26,6 +26,24 @@ interface TabItem {
   icon: string;
   active: boolean;
 }
+interface Event {
+  id?: string;
+  title: string;
+  date: string;
+  time?: string;
+  location?: string;
+  description?: string;
+  registrations?: number;
+  attendees?: number;
+  [key: string]: any;
+}
+
+interface Attendee {
+  department?: string;
+  name?: string;
+  section?: string;
+  status: 'registered' | 'present';
+}
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -33,6 +51,23 @@ interface TabItem {
   styleUrls: ['./admin-dashboard.page.scss'],
 })
 export class AdminDashboardPage implements OnInit, AfterViewInit {
+  showDashboardEventDetailsModal: boolean = false;
+  selectedDashboardEvent: Event | null = null;
+
+  sortedEvents: Event[] = [];
+  averageRegistrationGrowthRate: number = 0;
+  averageAttendeeGrowthRate: number = 0;
+  lastRegistrations: number = 0;
+  lastAttendees: number = 0;
+  predictedRegistrations: number = 0;
+  predictedAttendees: number = 0;
+
+  reportCurrentPage: number = 1;
+  reportTotalPages: number[] = [];
+  feedbackCurrentPage: number = 1;
+  feedbackTotalPages: number[] = [];
+  events: any[] = [];
+  rankedEvents: any[] = [];
   monthlyRegistrationsChart: any;
   selectedInvitedType: string = '';
   filteredEvents: any[] = [];
@@ -72,7 +107,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     latitude: 14.073856,
     longitude: 121.2612608,
   };
-  events: any[] = [];
+
   selectedEventId: string | null = null;
   attendeeList: any[] = [];
   attendeesDepartmentChart: any;
@@ -141,6 +176,9 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    this.fetchEvents();
+    this.loadSortedEvents();
+    this.loadEventAnalytics();
     this.loadMonthlyRegistrationChart();
     this.loadEvents();
     this.loadAttendeeDetails();
@@ -159,15 +197,17 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     this.authService.getTotalUserCount().subscribe((count) => {
       this.totalUsers = count;
     });
-
     this.feedbackService.getFeedbackRatings().subscribe((feedbacks: any[]) => {
       this.feedbackList = feedbacks;
-      this.calculateTotalPages();
+      this.calculateFeedbackTotalPages();
       this.updatePaginatedFeedbackList();
       this.createRatingsChart(feedbacks.map((feedback) => feedback.rating));
     });
+
     this.reportService.getReports().subscribe((reports) => {
       this.reports = reports;
+      this.calculateReportTotalPages();
+      this.updatePaginatedReportList();
     });
 
     this.fetchReports();
@@ -221,12 +261,12 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       .subscribe((events) => {
         const calendarEvents = events.map((e) => {
           const data: any = e.payload.doc.data();
-          const start = new Date(`${data.date}T${data.time}`); 
+          const start = new Date(`${data.date}T${data.time}`);
 
           return {
             id: e.payload.doc.id,
             title: data.title,
-            start: start, 
+            start: start,
             extendedProps: {
               time: data.time,
               location: data.location,
@@ -271,12 +311,6 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   calculateTotalPages() {
     const pageCount = Math.ceil(this.feedbackList.length / this.itemsPerPage);
     this.totalPages = Array.from({ length: pageCount }, (_, i) => i + 1);
-  }
-
-  updatePaginatedFeedbackList() {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedFeedbackList = this.feedbackList.slice(startIndex, endIndex);
   }
 
   goToPage(page: number) {
@@ -366,12 +400,6 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   calculateReportPages() {
     const pageCount = Math.ceil(this.reports.length / this.itemsPerPage);
     this.totalPages = Array.from({ length: pageCount }, (_, i) => i + 1);
-  }
-
-  updatePaginatedReportList() {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedReportList = this.reports.slice(startIndex, endIndex);
   }
 
   createDepartmentChart(departmentCounts: { [department: string]: number }) {
@@ -814,6 +842,269 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
             },
           },
         });
+      });
+  }
+  // async loadEventAnalytics() {
+  //   const eventsSnapshot = await this.firestore
+  //     .collection('events')
+  //     .get()
+  //     .toPromise();
+
+  //   const eventPromises = eventsSnapshot.docs.map(async (doc) => {
+  //     const eventData = doc.data() as Event; // Cast to Event type
+  //     const attendeesSnapshot = await this.firestore
+  //       .collection(`events/${doc.id}/attendees`)
+  //       .get()
+  //       .toPromise();
+
+  //     // Count attendees by status
+  //     const statusCounts = attendeesSnapshot.docs.reduce(
+  //       (counts, attendeeDoc) => {
+  //         const attendeeData = attendeeDoc.data() as Attendee; // Cast to Attendee type
+  //         const status = attendeeData.status.toLowerCase();
+  //         counts[status] = (counts[status] || 0) + 1;
+  //         return counts;
+  //       },
+  //       { registered: 0, present: 0 }
+  //     );
+
+  //     return {
+  //       id: doc.id,
+  //       title: eventData.title,
+  //       date: eventData.date,
+  //       registrations: statusCounts.registered,
+  //       attendees: statusCounts.present,
+  //       ...eventData,
+  //     };
+  //   });
+
+  //   this.events = await Promise.all(eventPromises);
+  //   this.rankEvents();
+  // }
+
+  rankEvents() {
+    this.rankedEvents = [...this.events].sort((a, b) => {
+      const attendeesComparison = b.attendees - a.attendees;
+      if (attendeesComparison !== 0) return attendeesComparison;
+      return b.registrations - a.registrations; // Secondary sorting by registrations
+    });
+
+    // Load chart after ranking
+    this.loadEventChart();
+  }
+
+  loadEventChart() {
+    const ctx = document.getElementById('eventChart') as HTMLCanvasElement;
+
+    const topEvents = this.rankedEvents.slice(0, 5); // Top 5 events
+    const labels = topEvents.map((event) => event.title);
+    const registrationsData = topEvents.map((event) => event.registrations);
+    const attendeesData = topEvents.map((event) => event.attendees);
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Registrations',
+            data: registrationsData,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+          },
+          {
+            label: 'Attendees',
+            data: attendeesData,
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true },
+        },
+      },
+    });
+  }
+  calculateFeedbackTotalPages() {
+    const pageCount = Math.ceil(this.feedbackList.length / this.itemsPerPage);
+    this.feedbackTotalPages = Array.from(
+      { length: pageCount },
+      (_, i) => i + 1
+    );
+  }
+
+  updatePaginatedFeedbackList() {
+    const startIndex = (this.feedbackCurrentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedFeedbackList = this.feedbackList.slice(startIndex, endIndex);
+  }
+
+  goToFeedbackPage(page: number) {
+    this.feedbackCurrentPage = page;
+    this.updatePaginatedFeedbackList();
+  }
+
+  calculateReportTotalPages() {
+    const pageCount = Math.ceil(this.reports.length / this.itemsPerPage);
+    this.reportTotalPages = Array.from({ length: pageCount }, (_, i) => i + 1);
+  }
+
+  updatePaginatedReportList() {
+    const startIndex = (this.reportCurrentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedReportList = this.reports.slice(startIndex, endIndex);
+  }
+
+  goToReportPage(page: number) {
+    this.reportCurrentPage = page;
+    this.updatePaginatedReportList();
+  }
+  async loadEventAnalytics() {
+    const eventsSnapshot = await this.firestore
+      .collection('events')
+      .get()
+      .toPromise();
+
+    const eventPromises = eventsSnapshot.docs.map(async (doc) => {
+      const eventData = doc.data() as Event;
+      const attendeesSnapshot = await this.firestore
+        .collection(`events/${doc.id}/attendees`)
+        .get()
+        .toPromise();
+
+      const statusCounts = attendeesSnapshot.docs.reduce(
+        (counts, attendeeDoc) => {
+          const attendeeData = attendeeDoc.data() as Attendee;
+          const status = attendeeData.status.toLowerCase();
+          counts[status] = (counts[status] || 0) + 1;
+          return counts;
+        },
+        { registered: 0, present: 0 }
+      );
+
+      return {
+        id: doc.id,
+        title: eventData.title,
+        date: eventData.date,
+        registrations: statusCounts.registered,
+        attendees: statusCounts.present,
+        ...eventData,
+      };
+    });
+
+    this.events = await Promise.all(eventPromises);
+
+    this.calculatePredictions();
+    this.rankEvents();
+  }
+
+  calculatePredictions() {
+    if (this.events.length < 2) {
+      console.warn('Not enough data to calculate predictions.');
+      this.predictedRegistrations = 0;
+      this.predictedAttendees = 0;
+      return;
+    }
+
+    let totalRegistrationGrowth = 0;
+    let totalAttendeeGrowth = 0;
+    let validRegistrationChanges = 0;
+    let validAttendeeChanges = 0;
+
+    for (let i = 1; i < this.events.length; i++) {
+      const prevEvent = this.events[i - 1];
+      const currentEvent = this.events[i];
+
+      if (prevEvent.registrations && currentEvent.registrations) {
+        const registrationGrowth =
+          (currentEvent.registrations - prevEvent.registrations) /
+          prevEvent.registrations;
+
+        if (isFinite(registrationGrowth)) {
+          totalRegistrationGrowth += registrationGrowth;
+          validRegistrationChanges++;
+        }
+      }
+
+      if (prevEvent.attendees && currentEvent.attendees) {
+        const attendeeGrowth =
+          (currentEvent.attendees - prevEvent.attendees) / prevEvent.attendees;
+
+        if (isFinite(attendeeGrowth)) {
+          totalAttendeeGrowth += attendeeGrowth;
+          validAttendeeChanges++;
+        }
+      }
+    }
+
+    this.averageRegistrationGrowthRate =
+      validRegistrationChanges > 0
+        ? totalRegistrationGrowth / validRegistrationChanges
+        : 0;
+    this.averageAttendeeGrowthRate =
+      validAttendeeChanges > 0 ? totalAttendeeGrowth / validAttendeeChanges : 0;
+
+    const lastEvent = this.events[this.events.length - 1];
+    this.lastRegistrations = lastEvent.registrations || 0;
+    this.lastAttendees = lastEvent.attendees || 0;
+
+    this.predictedRegistrations = Math.round(
+      this.lastRegistrations * (1 + this.averageRegistrationGrowthRate)
+    );
+    this.predictedAttendees = Math.round(
+      this.lastAttendees * (1 + this.averageAttendeeGrowthRate)
+    );
+  }
+  loadSortedEvents() {
+    this.sortedEvents = this.events
+      .filter((event) => event.date)
+      .sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB.getTime() - dateA.getTime();
+      });
+  }
+
+  viewEventDetails(eventId: string) {
+    const selectedEvent = this.events.find((event) => event.id === eventId);
+
+    if (selectedEvent) {
+      this.selectedDashboardEvent = selectedEvent;
+      this.showDashboardEventDetailsModal = true;
+    } else {
+      console.error('Event not found:', eventId);
+    }
+  }
+  closeDashboardEventDetailsModal() {
+    this.showDashboardEventDetailsModal = false;
+    this.selectedDashboardEvent = null;
+  }
+
+  fetchEvents() {
+    this.firestore
+      .collection('events')
+      .snapshotChanges()
+      .subscribe({
+        next: (snapshot) => {
+          console.log('Firestore Data:', snapshot);
+          this.events = snapshot.map((doc) => {
+            const data = doc.payload.doc.data() as Event;
+            const id = doc.payload.doc.id;
+            return { id, ...data };
+          });
+
+          this.sortedEvents = this.events
+            .filter((event) => !!event.date)
+            .sort(
+              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+
+          console.log('Sorted Events:', this.sortedEvents);
+        },
+        error: (error) => {
+          console.error('Error fetching events:', error);
+        },
       });
   }
 }
