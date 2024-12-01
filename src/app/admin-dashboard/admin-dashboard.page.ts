@@ -450,23 +450,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       });
     });
   }
-  // loadAttendeeDetails() {
-  //   if (this.selectedEventId) {
-  //     this.firestore
-  //       .collection('events')
-  //       .doc(this.selectedEventId)
-  //       .collection('attendees')
-  //       .valueChanges()
-  //       .subscribe((attendees: any[]) => {
-  //         this.attendeeList = attendees;
-  //         this.uniqueDepartments = [
-  //           ...new Set(attendees.map((att) => att.department)),
-  //         ];
 
-  //         this.updateDepartmentChart(attendees);
-  //       });
-  //   }
-  // }
   loadAttendeeDetails() {
     if (this.selectedEventId) {
       this.firestore
@@ -573,6 +557,13 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       this.eventForm.time &&
       this.eventForm.thumbnailUrl
     ) {
+      const { date, time } = this.eventForm;
+      const [hours, minutes] = time.split(':').map(Number);
+      const [year, month, day] = date.split('-').map(Number);
+      const timestamp = new Date(
+        Date.UTC(year, month - 1, day, hours, minutes)
+      ).getTime();
+
       this.eventForm.invited = this.eventForm.invited.map((role: string) =>
         role.toLowerCase()
       );
@@ -581,24 +572,31 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
         ? this.firestore.collection('events').doc(this.selectedEventId)
         : this.firestore.collection('events').doc();
 
-      eventDoc.set(this.eventForm, { merge: true }).then(() => {
-        this.showEventForm = false;
-        this.selectedEventId = null;
+      eventDoc
+        .set({ ...this.eventForm, timestamp }, { merge: true })
+        .then(() => {
+          this.showEventForm = false;
+          this.selectedEventId = null;
 
-        this.eventForm = {
-          title: '',
-          date: '',
-          time: '',
-          duration: null,
-          location: '',
-          invited: [],
-          description: '',
-          thumbnailUrl: '',
-          latitude: 0,
-          longitude: 0,
-        };
-        this.loadEvents();
-      });
+          this.eventForm = {
+            title: '',
+            date: '',
+            time: '',
+            duration: '',
+            location: '',
+            invited: [],
+            description: '',
+            thumbnailUrl: '',
+            latitude: 0,
+            longitude: 0,
+          };
+
+          this.fetchEvents();
+        })
+        .catch((error) => {
+          console.error('Error submitting event:', error);
+          alert('Failed to submit the event. Please try again.');
+        });
     } else {
       alert('Please complete all required fields.');
     }
@@ -650,6 +648,29 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       }
     }, 500);
   }
+  addTimestampsToExistingEvents() {
+    this.firestore
+      .collection('events')
+      .get()
+      .subscribe((snapshot) => {
+        snapshot.forEach((doc) => {
+          const data = doc.data() as Event;
+          if (data.date && data.time) {
+            const timestamp = new Date(`${data.date}T${data.time}`).getTime();
+            this.firestore
+              .collection('events')
+              .doc(doc.id)
+              .update({ timestamp })
+              .then(() => {
+                console.log(`Timestamp added for event: ${doc.id}`);
+              })
+              .catch((error) => {
+                console.error(`Error updating event ${doc.id}:`, error);
+              });
+          }
+        });
+      });
+  }
 
   updateMarkerPosition() {
     if (
@@ -689,15 +710,6 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
   toggleSidebar() {
     this.isSidebarVisible = !this.isSidebarVisible;
   }
-  // filterEvents() {
-  //   if (this.selectedInvitedType) {
-  //     this.filteredEvents = this.events.filter((event) =>
-  //       event.invited.includes(this.selectedInvitedType)
-  //     );
-  //   } else {
-  //     this.filteredEvents = [...this.events];
-  //   }
-  // }
 
   filterEvents() {
     if (this.selectedInvitedType) {
@@ -844,59 +856,21 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
         });
       });
   }
-  // async loadEventAnalytics() {
-  //   const eventsSnapshot = await this.firestore
-  //     .collection('events')
-  //     .get()
-  //     .toPromise();
-
-  //   const eventPromises = eventsSnapshot.docs.map(async (doc) => {
-  //     const eventData = doc.data() as Event; // Cast to Event type
-  //     const attendeesSnapshot = await this.firestore
-  //       .collection(`events/${doc.id}/attendees`)
-  //       .get()
-  //       .toPromise();
-
-  //     // Count attendees by status
-  //     const statusCounts = attendeesSnapshot.docs.reduce(
-  //       (counts, attendeeDoc) => {
-  //         const attendeeData = attendeeDoc.data() as Attendee; // Cast to Attendee type
-  //         const status = attendeeData.status.toLowerCase();
-  //         counts[status] = (counts[status] || 0) + 1;
-  //         return counts;
-  //       },
-  //       { registered: 0, present: 0 }
-  //     );
-
-  //     return {
-  //       id: doc.id,
-  //       title: eventData.title,
-  //       date: eventData.date,
-  //       registrations: statusCounts.registered,
-  //       attendees: statusCounts.present,
-  //       ...eventData,
-  //     };
-  //   });
-
-  //   this.events = await Promise.all(eventPromises);
-  //   this.rankEvents();
-  // }
 
   rankEvents() {
     this.rankedEvents = [...this.events].sort((a, b) => {
       const attendeesComparison = b.attendees - a.attendees;
       if (attendeesComparison !== 0) return attendeesComparison;
-      return b.registrations - a.registrations; // Secondary sorting by registrations
+      return b.registrations - a.registrations;
     });
 
-    // Load chart after ranking
     this.loadEventChart();
   }
 
   loadEventChart() {
     const ctx = document.getElementById('eventChart') as HTMLCanvasElement;
 
-    const topEvents = this.rankedEvents.slice(0, 5); // Top 5 events
+    const topEvents = this.rankedEvents.slice(0, 5);
     const labels = topEvents.map((event) => event.title);
     const registrationsData = topEvents.map((event) => event.registrations);
     const attendeesData = topEvents.map((event) => event.attendees);
@@ -1007,14 +981,18 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       return;
     }
 
+    const sortedEvents = this.events
+      .filter((event) => event.timestamp)
+      .sort((a, b) => a.timestamp - b.timestamp);
+
     let totalRegistrationGrowth = 0;
     let totalAttendeeGrowth = 0;
     let validRegistrationChanges = 0;
     let validAttendeeChanges = 0;
 
-    for (let i = 1; i < this.events.length; i++) {
-      const prevEvent = this.events[i - 1];
-      const currentEvent = this.events[i];
+    for (let i = 1; i < sortedEvents.length; i++) {
+      const prevEvent = sortedEvents[i - 1];
+      const currentEvent = sortedEvents[i];
 
       if (prevEvent.registrations && currentEvent.registrations) {
         const registrationGrowth =
@@ -1045,7 +1023,7 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
     this.averageAttendeeGrowthRate =
       validAttendeeChanges > 0 ? totalAttendeeGrowth / validAttendeeChanges : 0;
 
-    const lastEvent = this.events[this.events.length - 1];
+    const lastEvent = sortedEvents[sortedEvents.length - 1];
     this.lastRegistrations = lastEvent.registrations || 0;
     this.lastAttendees = lastEvent.attendees || 0;
 
@@ -1056,14 +1034,11 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
       this.lastAttendees * (1 + this.averageAttendeeGrowthRate)
     );
   }
+
   loadSortedEvents() {
     this.sortedEvents = this.events
-      .filter((event) => event.date)
-      .sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return dateB.getTime() - dateA.getTime();
-      });
+      .filter((event) => event.timestamp)
+      .sort((a, b) => b.timestamp - a.timestamp);
   }
 
   viewEventDetails(eventId: string) {
@@ -1083,23 +1058,17 @@ export class AdminDashboardPage implements OnInit, AfterViewInit {
 
   fetchEvents() {
     this.firestore
-      .collection('events')
+      .collection('events', (ref) => ref.orderBy('timestamp', 'desc'))
       .snapshotChanges()
       .subscribe({
         next: (snapshot) => {
-          console.log('Firestore Data:', snapshot);
           this.events = snapshot.map((doc) => {
             const data = doc.payload.doc.data() as Event;
             const id = doc.payload.doc.id;
             return { id, ...data };
           });
 
-          this.sortedEvents = this.events
-            .filter((event) => !!event.date)
-            .sort(
-              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-            );
-
+          this.sortedEvents = [...this.events];
           console.log('Sorted Events:', this.sortedEvents);
         },
         error: (error) => {

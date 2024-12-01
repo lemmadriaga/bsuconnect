@@ -91,14 +91,14 @@
           </div>
           <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold mb-4">Next Event Predictions</h3>
-            <!-- Grid Layout for Two Side-by-Side Cards -->
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Predicted Registrations -->
               <div
                 class="flex flex-col items-center justify-center bg-gray-100 rounded-lg p-6 shadow hover:shadow-lg transition duration-300"
               >
                 <h4 class="text-gray-600 text-lg font-semibold mb-2">
-                  Predicted Registrations
+                  Predicted Absentees
                 </h4>
                 <p
                   class="text-5xl font-bold text-red-700"
@@ -129,7 +129,7 @@
               <h4 class="text-lg font-semibold mb-2">Calculation Details</h4>
               <ul class="text-gray-600 text-sm space-y-2">
                 <li>
-                  <strong>Average Registration Growth Rate:</strong>
+                  <strong>Average No-Show Growth Rate:</strong>
                   {{ averageRegistrationGrowthRate | percent: '1.2-2' }}
                 </li>
                 <li>
@@ -137,8 +137,7 @@
                   {{ averageAttendeeGrowthRate | percent: '1.2-2' }}
                 </li>
                 <li>
-                  <strong>Last Event Registrations:</strong> {{
-                  lastRegistrations }}
+                  <strong>Last Event Absentees:</strong> {{ lastRegistrations }}
                 </li>
                 <li>
                   <strong>Last Event Attendees:</strong> {{ lastAttendees }}
