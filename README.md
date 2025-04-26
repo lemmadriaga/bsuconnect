@@ -1,6 +1,6 @@
 # BatStateU Connect + 🎓🌐
 
-**BatStateU Connect +** is an interactive platform designed to connect students, alumni, and faculty of **Batangas State University, Malvar Campus**.
+**BatStateU Connect +** is an interactive platform designed to connect students, alumni, and faculty of **Batangas State University, Alangilan Campus**.
 It fosters collaboration, communication, and engagement through features like a forum, chat functionality, event management,
 and various tools tailored to enhance the academic community experience.
 
